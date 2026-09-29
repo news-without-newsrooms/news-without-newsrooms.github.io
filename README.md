@@ -18,22 +18,31 @@ npm run dev
 Open the local URL printed by Vite.
 
 ```sh
+npm test
 npm run build
 npm run preview
 ```
 
-The build checks TypeScript, bundles the interactive components, and prerenders the complete page into `dist/index.html`. GitHub Pages serves only `dist/`.
+The dependency-free model tests check schedule lengths, participant placement, interest matching, worksheet exchange, and camera bounds. The build checks TypeScript, bundles the interactive components, and prerenders the complete page into `dist/index.html`. GitHub Pages serves only `dist/`.
 
 ## Interface
 
-The guide follows the participant journey: purpose, stage activities, group exchange, program, participation, preparation, and practical details. Stage tabs use Base UI keyboard navigation. Biographies, the source figure, and FAQs use native disclosure controls. The interface uses system fonts, local assets, visible focus states, and reduced-motion support. The worksheet remains printable.
+The guide uses nine chapters with native anchor links, a chapter selector, and gentle scroll snapping. It does not intercept the mouse wheel. Stage tabs use Base UI keyboard navigation. Biographies, the source figure, and FAQs use native disclosure controls. The interface uses system fonts, local assets, visible focus states, and reduced-motion support. The worksheet remains printable.
+
+The workshop walkthrough follows nine proposed activities. Choose an interest, then switch between the whole room and a participant view. The same participant moves through each activity; a small room overview keeps their location visible while following them. Play, pause, and previous/next controls explore the sequence. Playback is opt-in, pauses outside the viewport, and stops when the page is hidden. Reduced-motion preferences disable playback and animation while retaining step controls.
+
+The room, pixel characters, dialogue, and featured participant role are illustrative, not a confirmed floor plan or speaking assignment. The example shows 20 people including six organizers; the planned attendance remains 15–25. The three interest choices suggest a starting group, subject to balancing. The simulation uses the proposed two 90-minute sessions and a provisional 30-minute break. Worksheets, rather than people, move during the transfer exercise.
+
 
 ## Update
 
 - Website URL and shared contact address: `site.config.json`
 - Workshop content: `app/page.tsx`
 - Organizer biographies: `app/organizers.json`
+- Chapter controls: `app/chapter-navigation.tsx`
+- Walkthrough UI and spatial model: `app/workshop-simulation.tsx`, `app/simulation-model.ts`
 - Styling: `app/globals.css`
+- Subtle ink-wash background: `public/paper-wash.jpg` (generated with OpenAI ImageGen)
 - Printable worksheet: `public/worksheet.html`
 - Workshop figure: `public/workshop-overview.png`
 
