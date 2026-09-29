@@ -23,7 +23,8 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
   "include": [
     "app",

@@ -9,7 +9,7 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build && vite build --ssr app/render.tsx --outDir .render && node scripts/prerender.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test scripts/simulation-model.test.ts"
+    "test": "node --test scripts/*.test.ts"
   },
   "dependencies": {
     "react": "19.2.6",

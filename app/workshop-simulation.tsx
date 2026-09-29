@@ -3,9 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { phases, tables, peopleForPhase, papersForPhase, audiencePosition, interests, yourActivity, cameraForVisitor, thoughtBubbles } from './simulation-model';
 
+import RoomInspector from './room-inspector';
+import { roomObjectsForPhase, projectRoomObject } from './room-objects';
+import type { RoomObjectId } from './room-objects';
+
 const groupColors = ['#637971', '#a27f65', '#687a92'];
 
 export default function WorkshopSimulation() {
+  const [inspecting, setInspecting] = useState<RoomObjectId | null>(null);
   const [step, setStep] = useState(0);
   const count = 20;
   const [interest, setInterest] = useState(0);
@@ -23,8 +28,10 @@ export default function WorkshopSimulation() {
   const chosen = interests[interest];
   const visitor = people.find(person => person.visitor)!;
   const camera = cameraForVisitor(visitor, following);
+  const roomObjects = roomObjectsForPhase(phase.id);
+  const inspect = (id: RoomObjectId) => { setPlaying(false); setInspecting(id); };
   useEffect(() => {
-    if (reducedMotion) return;
+    if (reducedMotion) { setMoving(false); return; }
     setMoving(true);
     const timer = window.setTimeout(() => setMoving(false), 1800);
     return () => window.clearTimeout(timer);
@@ -44,13 +51,13 @@ export default function WorkshopSimulation() {
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', pauseWhenHidden); };
   }, []);
   useEffect(() => {
-    if (!playing || reducedMotion || !inView) return;
+    if (!playing || reducedMotion || !inView || inspecting) return;
     const timer = window.setTimeout(() => {
       if (step === phases.length - 1) setPlaying(false);
       else setStep(step + 1);
     }, 6500);
     return () => window.clearTimeout(timer);
-  }, [playing, reducedMotion, inView, step]);
+  }, [playing, reducedMotion, inView, step, inspecting]);
 
   const chooseStep = (index: number) => { setPlaying(false); setStep(index); };
   const play = () => { if (step === phases.length - 1) setStep(0); setPlaying(v => !v); };
@@ -68,11 +75,11 @@ export default function WorkshopSimulation() {
           <title id="room-title">{`${phase.title}: an illustrative workshop room`}</title>
           <desc id="room-description">{count} people including six organizers. {phase.action} Pixel characters represent participants. Your chosen interest is {chosen.title}. People and furniture show a possible arrangement, not a confirmed room plan.</desc>
           <defs>
-            <pattern id="floor-grain" width="47" height="47" patternUnits="userSpaceOnUse"><rect width="47" height="47" fill="#f0ece2"/><path d="M0 47H47V0" stroke="#e6e0d4" strokeWidth="1"/></pattern>
-            <pattern id="board-rule" width="22" height="18" patternUnits="userSpaceOnUse"><path d="M0 17H22" stroke="#d7e0d4" strokeWidth=".6"/></pattern>
+            <pattern id="floor-grain" width="96" height="36" patternUnits="userSpaceOnUse"><rect width="96" height="36" fill="#e1d3b9"/><path d="M0 0H96M0 18H96M0 36H96M24 0V18M72 18V36" stroke="#cbbc9f" strokeWidth="1"/><path d="M3 3H19M29 21H55M61 8H83M7 29H28" stroke="#d5c5a6" strokeWidth=".8"/></pattern>
+            <pattern id="board-rule" width="22" height="18" patternUnits="userSpaceOnUse"><path d="M0 17H22" stroke="#6b7567" strokeWidth=".6"/></pattern>
           </defs>
           <g className="room-camera" style={{transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`}}>
-          <rect width="800" height="520" fill="#dce6d3"/>
+          <rect width="800" height="520" fill="#cfd7c5"/>
           <path d="M363 520V452h72v68" fill="#d6cbb6"/>
           <path d="M371 464h57m-57 15h57m-57 15h57m-57 15h57" stroke="#bfb39b" strokeWidth="1"/>
           {[{x:19,y:110},{x:777,y:180},{x:20,y:325},{x:778,y:390}].map(({x,y}) => <g key={x+':'+y} transform={`translate(${x} ${y})`} shapeRendering="crispEdges"><rect x="-3" y="6" width="6" height="23" fill="#9b9074"/><path d="M-14-17H14V-8H20V14H-20V-8H-14Z" fill="#97ad84"/><path d="M-10-20H10V-11H16V5H-15V-11H-10Z" fill="#b0c29c"/><rect x="-7" y="-16" width="10" height="5" fill="#c5d4b0"/></g>)}
@@ -83,11 +90,12 @@ export default function WorkshopSimulation() {
           <path d="M367 461H435" stroke="#e0e6dc" strokeWidth="12"/>
           <path d="M368 459V410Q435 409 435 459" fill="none" stroke="#9ca994" strokeWidth="1.5"/>
           <text x="400" y="492" textAnchor="middle" className="room-note">WORKSHOP ROOM / ILLUSTRATIVE PLAN</text>
+          <g aria-hidden="true"><path d="M95 41H202L175 175H90Z" fill="#fff9dc" opacity=".2"/><path d="M590 41H710L703 170H618Z" fill="#fff9dc" opacity=".2"/><rect x="64" y="201" width="38" height="122" fill="#ad9671" stroke="#8d7d60"/>{[214,241,268,295].map(y => <g key={y}><path d={`M65 ${y+17}H101`} stroke="#7d735a" strokeWidth="2"/>{[69,77,84,91].map((x,i)=><rect key={x} x={x} y={y} width={i===1?5:4} height={i%2?15:12} fill={['#6d807c','#ad7158','#e2d3a9','#555c4e'][i]}/>)}</g>)}<rect x="695" y="214" width="29" height="98" fill="#c5bea8" stroke="#928b76"/>{[700,707,714].map(x=><path key={x} d={`M${x} 219V307`} stroke="#e6dfc9" strokeWidth="3"/>)}</g>
           {/* Windows and plants establish a quiet, tangible room. */}
           {[140, 275, 525, 660].map(x => <g key={x}><rect x={x - 37} y="25" width="74" height="15" fill="#dfe9e5" stroke="#85958c"/><path d={`M${x} 25V40`} stroke="#85958c"/></g>)}
           {[{x:80,y:75},{x:713,y:75},{x:81,y:418},{x:712,y:418}].map(({x,y}) => <g key={x+':'+y} transform={`translate(${x} ${y})`}><rect x="-10" y="1" width="20" height="18" rx="3" fill="#9c8e77"/><circle cx="-7" cy="-6" r="11" fill="#71856e"/><circle cx="7" cy="-7" r="10" fill="#82957a"/><circle cy="-13" r="9" fill="#95a88b"/></g>)}
-          <rect x="272" y="56" width="258" height="70" rx="2" fill="#bdc8ba"/>
-          <rect x="278" y="60" width="246" height="60" fill="#f8faf3" stroke="#6d806d"/>
+          <rect x="272" y="56" width="258" height="70" rx="2" fill="#999d88"/>
+          <rect x="278" y="60" width="246" height="60" fill="#394336" stroke="#252e24"/>
           <rect x="283" y="66" width="236" height="47" fill="url(#board-rule)"/>
           <text x="400" y="83" textAnchor="middle" className="room-board-kicker">{phase.session.toUpperCase()}</text>
           <text x="400" y="104" textAnchor="middle" className="room-board-title">{phase.screen}</text>
@@ -140,13 +148,20 @@ export default function WorkshopSimulation() {
           </g>
           </g>
         </svg>
+        <div className="room-hotspots" aria-label="Objects you can explore">{roomObjects.map(object => {
+          const position = projectRoomObject(object, camera);
+          if (!position.visible) return null;
+          return <button key={object.id} type="button" className={`room-hotspot object-${object.id}`} disabled={moving} aria-label={object.label} aria-haspopup="dialog" aria-describedby="room-object-hint" onClick={() => inspect(object.id)} style={{left:`${position.left}%`,top:`${position.top}%`,width:`max(44px, ${position.width}%)`,height:`max(44px, ${position.height}%)`}}><span className="object-plus" aria-hidden="true">+</span><span className="object-tooltip" aria-hidden="true">{object.title}</span></button>;
+        })}</div>
         {following && <button className="room-minimap" type="button" onClick={() => setFollowing(false)} aria-label="Return to the whole-room view"><span>YOU IN THE ROOM</span><svg viewBox="0 0 800 520" aria-hidden="true"><rect x="45" y="33" width="710" height="425" fill="#f4f3e7" stroke="#91a18b" strokeWidth="9"/><rect x="272" y="56" width="258" height="70" fill="#b7c9ab"/>{grouped && tables.map(t => <ellipse key={t.label} cx={t.x} cy={t.y} rx="55" ry="45" fill="#d5c5a7"/>)}{people.map(person => <circle key={person.id} cx={person.x} cy={person.y} r={person.visitor ? 22 : 10} fill={person.visitor ? '#315e66' : '#8f9e80'} stroke={person.visitor ? '#fffef5' : 'none'} strokeWidth="8"/>)}</svg><span>Whole room ↗</span></button>}
         </div>
         <div className="room-legend"><span className="your-table"><i/>Your interest: {chosen.title}</span><span>{grouped ? `Your starting table: ${chosen.table}` : 'Follow the character marked “you”'}</span></div>
       </div>
     </div>
+    <div className="room-object-shelf"><p id="room-object-hint"><span className="double-line-key" aria-hidden="true">+</span>Double outline + means you can open it.</p><div aria-label="Room documents">{roomObjects.map(object => <button key={object.id} type="button" onClick={() => inspect(object.id)} aria-haspopup="dialog">{object.title}<span aria-hidden="true">↗</span></button>)}</div></div>
     <div className="simulation-detail" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><div><p className="simulation-session">{phase.session} · {phase.minutes} minutes</p><h3>{phase.title}</h3><p>{phase.action}</p></div><div className="simulation-output"><span>YOUR PART IN THIS MOMENT</span><p>{yourActivity(phase.id, interest)}</p><details className="phase-output"><summary>What the group produces</summary><p>{phase.output}</p></details></div></div>
     <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : 'Play walkthrough'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : 'Play walkthrough'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : 'A brief preview of each activity, at your pace.'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
     <p id="simulation-assumptions" className="simulation-assumptions">An illustrative visit with 20 pixel characters, including six organizers. Dialogue and the featured participant’s role are examples. The planned attendance is 15–25. Your interest suggests a starting group; organizers will balance the actual groups. Room, seating, and panel are not confirmed. During the exchange, worksheets move between groups.</p>
+    <RoomInspector object={inspecting} phase={phase.id} interest={interest} onClose={() => setInspecting(null)} onCasework={() => { setInspecting(null); chooseStep(5); setFollowing(true); requestAnimationFrame(() => root.current?.querySelector<HTMLButtonElement>('.phase-list [aria-current=step]')?.focus({preventScroll:true})); }}/>
   </div>;
 }

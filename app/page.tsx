@@ -73,8 +73,8 @@ export default function Home() {
     <div className="status-bar"><div className="wrap"><span className="status-dot" aria-hidden="true" /><strong>Proposed CHI 2027 workshop</strong><span className="status-detail">Acceptance pending · Submissions not open</span></div></div>
     <header className="site-header">
       <div className="wrap header-inner">
-        <a className="brand" href="#main" aria-label="News Without Newsrooms, back to top"><span className="brand-symbol" aria-hidden="true">N<span>/</span>N</span><span>News Without<br/>Newsrooms</span></a>
-        <nav aria-label="Main navigation"><a href="#workshop">The workshop</a><a href="#program">Program</a><a href="#participate">Participate</a><a href="#organizers">Organizers</a></nav>
+        <a className="brand" href="#main" aria-label="News Without Newsrooms, back to top"><span className="brand-symbol" aria-hidden="true">N/WN</span><span className="brand-name">News Without<br/>Newsrooms</span></a>
+        <nav aria-label="Main navigation"><a href="#workshop">About</a><a href="#walkthrough">In the room</a><a href="#program">Program</a><a href="#participate">Participate</a><a href="#organizers">Organizers</a></nav>
         <a className="header-contact" href="#contact">Get in touch <Arrow external /></a>
       </div>
     </header>
@@ -82,29 +82,27 @@ export default function Home() {
     <main id="main">
       <div className="hero-backdrop chapter" id="overview">
       <section className="hero wrap" aria-labelledby="page-title">
-        <div className="hero-copy">
-          <p className="eyebrow">PROPOSED WORKSHOP / CHI 2027 / PITTSBURGH</p>
-          <h1 id="page-title">News Without<br/><span>Newsrooms</span></h1>
-          <p className="hero-subtitle">Belief, Spread, and Aftermath as<br className="desktop-break"/> Questions for Journalism and HCI</p>
-          <p className="hero-description">A workshop bringing journalism, human–computer interaction, AI, and policy into conversation about how people encounter claims outside established newsrooms.</p>
-          <div className="hero-actions"><a className="button button-primary" href="#walkthrough">Explore the program <Arrow /></a><a className="quiet-link" href="#participate">Participation details <Arrow /></a></div>
+        <div className="hero-index"><p>JOURNALISM / HCI / AI / POLICY</p><p>PITTSBURGH, MAY 2027 <span>DATE TO BE CONFIRMED</span></p></div>
+        <h1 id="page-title" aria-label="News Without Newsrooms"><span className="title-line">News Without</span><span className="title-line title-last">Newsrooms</span></h1>
+        <div className="hero-band">
+          <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p>What can people see, verify, and do when a post looks like news?</p></div>
+          <div className="hero-copy"><p className="hero-subtitle">Belief, Spread, and Aftermath as Questions for Journalism and HCI</p><p className="hero-description">Examine news-like posts, their circulation, and what happens when later information arrives.</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
         </div>
-        <aside className="hero-aside"><span className="label">THE QUESTION WE’LL WORK ON</span><blockquote>What can people see, verify, and do when a post looks like news?</blockquote><p>We examine the post, its spread, and its aftermath through case records and participants’ own contexts.</p><a href="#workshop" className="text-link">Read about the workshop <Arrow /></a></aside>
       </section>
       <div className="facts wrap" aria-label="Workshop at a glance">
-        <div><span className="label">PROPOSED VENUE</span><strong>CHI 2027 · Pittsburgh</strong><span>May 2027 · Date to be confirmed</span></div>
-        <div><span className="label">THE FORMAT</span><strong>Two 90-minute sessions</strong><span>In person · Discussion + collaborative casework</span></div>
+        <div><span className="label">THE FORMAT</span><strong>Two 90-minute sessions</strong><span>In person · Proposed program</span></div>
         <div><span className="label">THE ROOM</span><strong>15–25 participants</strong><span>Including organizers · Across disciplines</span></div>
+        <div><span className="label">THE INVITATION</span><strong>A case and a question</strong><a href="#participate">How to take part <Arrow /></a></div>
+      </div>
       </div>
 
-      </div>
       <section className="section wrap chapter" id="workshop" aria-labelledby="workshop-title">
-        <div className="section-heading"><div><p className="eyebrow">01 / INSIDE THE WORKSHOP</p><h2 id="workshop-title">The questions behind<br/>the workshop</h2></div><p className="section-intro">Work with people from journalism, HCI, AI, and policy. Start with a shared case, examine a decision, then test your ideas against someone else’s perspective.</p></div>
+        <div className="section-heading"><div><p className="eyebrow">01 / INSIDE THE WORKSHOP</p><h2 id="workshop-title">When a post<br/>becomes the news.</h2></div><p className="section-intro">Work with people from journalism, HCI, AI, and policy. Start with a shared case, examine a decision, then test your ideas against someone else’s perspective.</p></div>
 
         <div className="activity-heading"><h3>Three stages of a claim</h3><p>Select a stage to explore your group’s activity.</p></div>
         <Tabs.Root defaultValue="post" className="stage-tabs">
           <Tabs.List className="stage-list" aria-label="Explore the workshop stages">
-            {stages.map(s => <Tabs.Tab className="stage-tab" value={s.id} key={s.id}><span className="stage-number">{s.n}</span><span><strong>{s.title}</strong><small>{s.verb}</small></span><ArrowRight size={18} aria-hidden="true" /></Tabs.Tab>)}
+            {stages.map(s => <Tabs.Tab className="stage-tab" value={s.id} key={s.id}><span className="stage-number">{s.n}</span><span><strong>{s.title.replace('The ', '')}</strong><small>{s.verb}</small></span><ArrowRight size={18} aria-hidden="true" /></Tabs.Tab>)}
           </Tabs.List>
           {stages.map(s => <Tabs.Panel className="stage-panel" value={s.id} key={s.id} keepMounted>
             <div className="stage-content"><p className="eyebrow">THE QUESTION</p><h3>{s.question}</h3><p>{s.task}</p><dl><div><dt>On the table</dt><dd>{s.record}</dd></div><div><dt>You leave with</dt><dd>{s.output}</dd></div></dl></div>
@@ -117,19 +115,19 @@ export default function Home() {
       </section>
 
       <section className="simulation-chapter chapter" id="walkthrough" aria-labelledby="walkthrough-title"><div className="simulation-chapter-inner">
-        <div className="section-heading"><div><p className="eyebrow">02 / IN THE ROOM</p><h2 id="walkthrough-title">Walk through the workshop</h2></div><p className="section-intro">See where you’ll be, what you’ll work on, and how the groups connect. Select a moment or play through the proposed program.</p></div>
+        <div className="section-heading"><div><p className="eyebrow">02 / IN THE ROOM</p><h2 id="walkthrough-title">A seat in<br/>the room.</h2></div><p className="section-intro">Follow one participant through the day, or see the whole room at once. Choose your interest and explore the proposed activities.</p></div>
         <WorkshopSimulation />
       </div></section>
 
       <section className="section wrap chapter" id="program" aria-labelledby="program-title">
-        <div className="section-heading"><div><p className="eyebrow">03 / PROGRAM DETAILS</p><h2 id="program-title">Proposed program</h2></div><p className="section-intro">Two sessions move from common ground to research questions with a next step. All timings are provisional.</p></div>
+        <div className="section-heading"><div><p className="eyebrow">03 / PROGRAM DETAILS</p><h2 id="program-title">The proposed<br/>program.</h2></div><p className="section-intro">Two sessions move from common ground to research questions with a next step. All timings are provisional.</p></div>
         <div className="sessions">{sessions.map(s => <article className="session" key={s.n}><header className="session-heading"><span className="session-label">SESSION {s.n}<span>90 MIN</span></span><h3>{s.title}</h3><p>{s.description}</p></header><ol>{s.rows.map(([mins, title, description]) => <li key={title}><div className="duration"><strong>{mins}</strong><span>min</span></div><div><h4>{title}</h4><p>{description}</p></div></li>)}</ol></article>)}</div>
         <div className="schedule-note"><span className="label">BETWEEN SESSIONS</span><p>The plan allows a 30-minute conference break. Final timing and room details follow acceptance. If sessions are 75 minutes, we will retain every activity with shorter segments.</p></div>
         <div className="outcomes"><div className="outcome-heading"><p className="eyebrow">WHAT WE TAKE FORWARD</p><h3>Workshop outputs</h3></div><div><span>01</span><h4>A shared sequence</h4><p>Records, user actions, unknowns, and disagreements connected across stages.</p></div><div><span>02</span><h4>Questions with next steps</h4><p>Situated research questions, volunteer owners, and ideas to pursue together.</p></div><div><span>03</span><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
       </section>
 
       <section className="participation-section chapter" id="participate" aria-labelledby="participate-title"><div className="wrap participation-layout">
-        <div className="participation-intro"><p className="eyebrow">04 / PARTICIPATION</p><h2 id="participate-title">Who can take part</h2><p>We welcome HCI and AI researchers, system designers, journalists, creators, and platform and policy practitioners.</p><p>You do not need expertise in every field or prior knowledge of the Korean cases. Bring a case, interface, study, design, or argument that others can work with.</p><div className="participation-status"><span className="status-dot" aria-hidden="true"/><strong>Submissions are not open yet.</strong><p>The call and final instructions will follow workshop acceptance.</p></div></div>
+        <div className="participation-intro"><p className="eyebrow">04 / PARTICIPATION</p><h2 id="participate-title">Bring your<br/>perspective.</h2><p>We welcome HCI and AI researchers, system designers, journalists, creators, and platform and policy practitioners.</p><p>You do not need expertise in every field or prior knowledge of the Korean cases. Bring a case, interface, study, design, or argument that others can work with.</p><div className="participation-status"><span className="status-dot" aria-hidden="true"/><strong>Submissions are not open yet.</strong><p>The call and final instructions will follow workshop acceptance.</p></div></div>
         <div className="participation-options"><p className="label">TWO WAYS TO CONTRIBUTE</p><article><span className="option-index">A</span><div><h3>Position paper</h3><p className="format">2–4 pages · ACM single-column · Not anonymized</p><p>A case, design, study, or argument, with a concrete situation and a question for the room.</p></div></article><article><span className="option-index">B</span><div><h3>Practitioner statement</h3><p className="format">1 page</p><p>A situation from practice, the decision it raised, and a question you want to explore with others.</p></div></article><div className="planned-dates"><div><span>Planned call opening</span><strong>17 Dec 2026</strong></div><div><span>Planned submission deadline</span><strong>11 Feb 2027 <small>AoE</small></strong></div></div><p className="selection-note">Dates are subject to acceptance. Two organizers will review each contribution for relevance, a concrete situation, and a workable question. Email submission instructions will be published with the call.</p></div>
       </div></section>
 
@@ -146,6 +144,6 @@ export default function Home() {
         <details><summary>Will contributions be published or recorded?<ChevronDown size={18} aria-hidden="true" /></summary><p>Contributions will be posted only with author consent; authors retain copyright. Panel recording requires consent. Participants can contribute without attribution, and the report will be reviewed by participants. The event is a design workshop, not a participant study.</p></details>
       </div></section>
     </main>
-    <footer id="contact" className="chapter"><div className="wrap"><div className="footer-top"><div><p className="eyebrow">CONTACT</p><h2>Contact the organizers</h2></div><div className="contact-block"><p>Write to the organizing team.</p><a className="contact-email" href={`mailto:${site.contactEmail}`}><span>{site.contactEmail}</span><Arrow external /></a><p className="contact-note">This address is for questions. Submissions will open only after acceptance and publication of the call.</p></div></div><div className="footer-bottom"><a className="footer-brand" href="#main">News Without Newsrooms</a><p>Participant guide prototype · Proposed for CHI 2027</p><a href="https://chi2027.acm.org/authors/workshops/" target="_blank" rel="noreferrer">CHI workshop information <Arrow external /></a></div></div></footer>
+    <footer id="contact" className="chapter"><div className="wrap"><div className="footer-top"><div><p className="eyebrow">GET IN TOUCH</p><h2>Let’s talk.</h2></div><div className="contact-block"><p>Write to the organizing team.</p><a className="contact-email" href={`mailto:${site.contactEmail}`}><span>{site.contactEmail}</span><Arrow external /></a><p className="contact-note">This address is for questions. Submissions will open only after acceptance and publication of the call.</p></div></div><div className="footer-bottom"><a className="footer-brand" href="#main">News Without Newsrooms</a><p>Participant guide prototype · Proposed for CHI 2027</p><a href="https://chi2027.acm.org/authors/workshops/" target="_blank" rel="noreferrer">CHI workshop information <Arrow external /></a></div></div></footer>
   </>;
 }

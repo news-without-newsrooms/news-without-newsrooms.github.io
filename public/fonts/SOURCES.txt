@@ -1,0 +1,11 @@
+Barlow Condensed, weight 900
+Source: Google Fonts (fonts.googleapis.com / fonts.gstatic.com)
+Project: https://github.com/google/fonts/tree/main/ofl/barlowcondensed
+License: barlow-OFL.txt
+
+Manrope, weights 400 and 600
+Source: Google Fonts (fonts.googleapis.com / fonts.gstatic.com)
+Project: https://github.com/google/fonts/tree/main/ofl/manrope
+License: manrope-OFL.txt
+
+Downloaded for this participant guide on 2026-09-29. Fonts are served locally.
