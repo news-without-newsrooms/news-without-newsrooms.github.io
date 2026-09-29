@@ -1,8 +1,27 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { nextReadingStop, TOUR_DELAY } from '../app/chapter-model.ts';
+import { nextReadingStop, nearbyChapterStop, TOUR_DELAY } from '../app/chapter-model.ts';
 import { papersForPhase } from '../app/simulation-model.ts';
 import { roomObjectsForPhase } from '../app/room-objects.ts';
+
+test('settling aligns a nearby chapter approached in either direction, including a small overshoot', () => {
+  const stops = [0, 1000, 2800];
+  assert.equal(nearbyChapterStop(700, 910, stops, 800), 1000);
+  assert.equal(nearbyChapterStop(700, 1060, stops, 800), 1000);
+  assert.equal(nearbyChapterStop(1400, 1090, stops, 800), 1000);
+  assert.equal(nearbyChapterStop(1400, 940, stops, 800), 1000);
+  assert.equal(nearbyChapterStop(700, 850, stops, 800), null);
+  assert.equal(nearbyChapterStop(700, 910, stops, 400), null);
+});
+
+test('settling never pulls back to a chapter just left or skips the middle of long content', () => {
+  const stops = [0, 1000, 2800];
+  assert.equal(nearbyChapterStop(1000, 1060, stops, 800), null);
+  assert.equal(nearbyChapterStop(1000, 940, stops, 800), null);
+  assert.equal(nearbyChapterStop(1300, 2100, stops, 800), null);
+  assert.equal(nearbyChapterStop(990, 995, stops, 800), null);
+  assert.equal(nearbyChapterStop(700, 1000, stops, 800), null);
+});
 
 test('the three-second tour aligns short chapters and preserves long chapter content', () => {
   assert.equal(TOUR_DELAY, 3000);

@@ -1205,6 +1205,14 @@ footer .eyebrow {
 .view-controls button:hover {
   background: #f0eee5;
 }
+.view-controls button.character-motion {
+  flex: 0 0 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-left-color: #c8c6b8;
+}
 .room-viewport {
   position: relative;
 }
@@ -1274,14 +1282,14 @@ footer .eyebrow {
   font-size: 10px;
   letter-spacing: -.35px;
 }
-.is-moving .pixel-leg-left {
-  animation: pixel-step .32s steps(2,end) infinite alternate;
+.is-animated .pixel-leg-left {
+  animation: pixel-step .55s steps(2,end) var(--idle-delay) infinite alternate;
 }
-.is-moving .pixel-leg-right {
-  animation: pixel-step .32s steps(2,end) -.16s infinite alternate;
+.is-animated .pixel-leg-right {
+  animation: pixel-step .55s steps(2,end) calc(var(--idle-delay) - .55s) infinite alternate;
 }
-.is-moving .pixel-person {
-  animation: pixel-bob .32s steps(2,end) infinite alternate;
+.is-animated .pixel-person {
+  animation: pixel-bob .55s steps(2,end) var(--idle-delay) infinite alternate;
 }
 @keyframes pixel-step {
   from {

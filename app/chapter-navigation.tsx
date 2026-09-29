@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
-import { chapters, TOUR_DELAY, nextReadingStop } from './chapter-model';
+import { chapters, TOUR_DELAY, nextReadingStop, nearbyChapterStop } from './chapter-model';
 import { createNavigationController } from './navigation-controller';
 import { connectPageScroll, headerOffset } from './page-scroll';
 export { chapters } from './chapter-model';
@@ -19,7 +19,7 @@ export default function ChapterNavigation() {
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
     const sections = [...chapters.map(([id]) => document.getElementById(id)!), document.getElementById('contact')!];
     const html = document.documentElement;
-    let frame = 0, auto = false;
+    let frame = 0, auto = false, pointerHeld = false, touchHeld = false;
     const maxScroll = () => Math.max(0, html.scrollHeight - innerHeight);
     const currentIndex = () => {
       if (scrollY >= maxScroll() - 4) return sections.length - 1;
@@ -28,7 +28,8 @@ export default function ChapterNavigation() {
       return index;
     };
     const update = () => { frame = 0; setActive(currentIndex()); };
-    const observeScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const queueUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const observeScroll = () => { queueUpdate(); controller.nativeScrolled(); };
     const eligible = () => desktop.matches && !reduce.matches && !document.hidden;
     const controller = createNavigationController({
       now: () => performance.now(),
@@ -42,6 +43,11 @@ export default function ChapterNavigation() {
       maxY: maxScroll,
       reducedMotion: () => reduce.matches,
       canTour: eligible,
+      canSettle: () => !pointerHeld && !touchHeld && !document.hidden && !reduce.matches &&
+        !document.querySelector('.room-preview[open]') && !window.getSelection()?.toString(),
+      settleTarget: (from, to) => nearbyChapterStop(from, to, sections.map((section, index) =>
+        index === 0 ? 0 : Math.min(maxScroll(), Math.max(0, section.getBoundingClientRect().top + scrollY - headerOffset()))
+      ), innerHeight),
       nextTourTarget: () => {
         if (scrollY >= maxScroll() - 4) return null;
         const next = sections[currentIndex() + 1];
@@ -66,8 +72,22 @@ export default function ChapterNavigation() {
       toggle: () => { if (auto) controller.pause(); else controller.play(); },
     };
     const manualInput = (event: Event) => {
+      if (event.type === 'pointerdown') pointerHeld = true;
+      if (event.type === 'touchstart') touchHeld = true;
       if (event.target instanceof Element && event.target.closest('.chapter-auto') && event.type !== 'wheel' && event.type !== 'touchstart') return;
+      const freeArea = event.target instanceof Element && event.target.closest('.stage-list, .phase-list, .room-viewport, .room-preview, .view-controls, .interest-options, input, textarea, select, [contenteditable]');
+      if (!freeArea && event instanceof WheelEvent && !event.ctrlKey && Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+        controller.beginNativeScroll(Math.sign(event.deltaY)); return;
+      }
+      if (!freeArea && event.type === 'touchstart' && (event as TouchEvent).touches.length === 1) {
+        controller.beginNativeScroll(); return;
+      }
       controller.pause();
+    };
+    const release = (event: Event) => {
+      if (event.type.startsWith('touch')) touchHeld = (event as TouchEvent).touches.length > 0;
+      else pointerHeld = false;
+      controller.nativeScrolled();
     };
     const click = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -84,9 +104,9 @@ export default function ChapterNavigation() {
       setAvailable(desktop.matches && !reduce.matches);
       // Mobile address-bar resizing must not cancel a user's selected destination.
       if (auto && !eligible()) controller.pause();
-      observeScroll();
+      queueUpdate();
     };
-    const visibility = () => { if (document.hidden) controller.pause(); };
+    const visibility = () => { if (document.hidden) { pointerHeld = touchHeld = false; controller.pause(); } };
     const preference = () => { controller.pause(); resize(); };
     const hash = () => {
       const target = document.getElementById(location.hash.slice(1));
@@ -96,6 +116,8 @@ export default function ChapterNavigation() {
     const inputs = ['wheel', 'pointerdown', 'touchstart', 'keydown', 'focusin'];
     // Cancel before React handles the same input and requests a new destination.
     inputs.forEach(type => document.addEventListener(type, manualInput, { passive: true, capture: true }));
+    const releases = ['pointerup', 'pointercancel', 'touchend', 'touchcancel'];
+    releases.forEach(type => document.addEventListener(type, release, { passive: true, capture: true }));
     document.addEventListener('click', click);
     document.addEventListener('visibilitychange', visibility);
     window.addEventListener('scroll', observeScroll, { passive: true });
@@ -110,6 +132,7 @@ export default function ChapterNavigation() {
     return () => {
       controller.dispose(); disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
       inputs.forEach(type => document.removeEventListener(type, manualInput, true));
+      releases.forEach(type => document.removeEventListener(type, release, true));
       document.removeEventListener('click', click); document.removeEventListener('visibilitychange', visibility);
       window.removeEventListener('scroll', observeScroll); window.removeEventListener('resize', resize);
       window.removeEventListener('hashchange', hash);

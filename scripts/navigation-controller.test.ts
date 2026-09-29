@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createNavigationController } from '../app/navigation-controller.ts';
 import type { NavigationState } from '../app/navigation-controller.ts';
+import { nearbyChapterStop } from '../app/chapter-model.ts';
 
-function fixture() {
-  let time = 0, nextId = 0, y = 0, limit = 5000, reduced = false, allowed = true;
+function fixture(withSettle = false) {
+  let time = 0, nextId = 0, y = 0, limit = 5000, reduced = false, allowed = true, settleAllowed = true;
   const tasks = new Map<number, { at: number; run: () => void }>();
   const writes: { at: number; y: number }[] = [];
   const states: NavigationState[] = [];
@@ -23,6 +24,8 @@ function fixture() {
     reducedMotion: () => reduced,
     canTour: () => allowed,
     nextTourTarget: () => y >= limit - 2 ? null : Math.min(y + 600, limit),
+    canSettle: () => settleAllowed,
+    settleTarget: withSettle ? (from, to) => nearbyChapterStop(from, to, [0, 1000, 2000, 3000], 800) : undefined,
     onState: state => states.push(state),
     tourDelay: 3000,
   });
@@ -33,6 +36,7 @@ function fixture() {
     get pending() { return tasks.size; },
     setReduced(value: boolean) { reduced = value; },
     setAllowed(value: boolean) { allowed = value; },
+    setSettleAllowed(value: boolean) { settleAllowed = value; },
     setLimit(value: number) { limit = value; },
     nativeScrollTo(top: number) { y = top; },
     advance(milliseconds: number) {
@@ -50,6 +54,71 @@ function fixture() {
 test('loading and native scrolling create no automatic movement', () => {
   const f = fixture(); f.advance(10000); f.nativeScrollTo(700); f.advance(10000);
   assert.equal(f.y, 700); assert.equal(f.writes.length, 0); assert.equal(f.pending, 0);
+});
+
+test('settling waits for the last inertial scroll, and programmatic scroll cannot start another settle', () => {
+  const f = fixture(true); f.nativeScrollTo(600); f.controller.beginNativeScroll(1);
+  f.nativeScrollTo(910); f.controller.nativeScrolled(); f.advance(200);
+  f.nativeScrollTo(950); f.controller.nativeScrolled(); f.advance(219);
+  assert.equal(f.writes.length, 0);
+  f.advance(500); assert.equal(f.y, 1000); assert.equal(f.pending, 0);
+  const count = f.writes.length;
+  f.controller.nativeScrolled(); f.advance(10000);
+  assert.equal(f.writes.length, count); assert.equal(f.pending, 0);
+});
+
+test('held touch blocks settling until release, and leaving an aligned chapter remains free', () => {
+  const f = fixture(true); f.nativeScrollTo(600); f.setSettleAllowed(false);
+  f.controller.beginNativeScroll(); f.nativeScrollTo(950); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.writes.length, 0);
+  f.setSettleAllowed(true); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.y, 1000);
+  const count = f.writes.length;
+  f.controller.beginNativeScroll(1); f.nativeScrollTo(1060); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.y, 1060); assert.equal(f.writes.length, count);
+});
+
+test('tab selection replaces both a queued settle and an alignment already in progress', () => {
+  for (const delay of [100, 300]) {
+    const f = fixture(true); f.nativeScrollTo(600); f.controller.beginNativeScroll(1);
+    f.nativeScrollTo(910); f.controller.nativeScrolled(); f.advance(delay);
+    if (delay === 300) assert.ok(f.y > 910 && f.y < 1000);
+    f.controller.navigate(() => 650); f.advance(2000);
+    assert.equal(f.y, 650); assert.equal(f.pending, 0);
+  }
+});
+
+test('another native gesture cancels alignment immediately and reversals use the new direction', () => {
+  const f = fixture(true); f.nativeScrollTo(600); f.controller.beginNativeScroll(1);
+  f.nativeScrollTo(910); f.controller.nativeScrolled(); f.advance(300);
+  assert.ok(f.y > 910 && f.y < 1000);
+  f.controller.beginNativeScroll(1); const count = f.writes.length;
+  f.nativeScrollTo(1600); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.y, 1600); assert.equal(f.writes.length, count);
+  f.controller.beginNativeScroll(1); f.nativeScrollTo(2100); f.controller.nativeScrolled(); f.advance(100);
+  f.controller.beginNativeScroll(-1); f.nativeScrollTo(1980); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.y, 2000);
+});
+
+test('manual settling cancels a tour and cannot restart it; pause drops an armed gesture', () => {
+  const f = fixture(true); f.controller.play(); f.advance(2900);
+  f.controller.beginNativeScroll(1); f.nativeScrollTo(950); f.controller.nativeScrolled(); f.advance(10000);
+  assert.equal(f.y, 1000); assert.equal(f.states.at(-1)?.playing, false); assert.equal(f.pending, 0);
+  const count = f.writes.length;
+  f.controller.beginNativeScroll(1); f.nativeScrollTo(1920); f.controller.nativeScrolled(); f.controller.pause();
+  f.controller.nativeScrolled(); f.advance(10000);
+  assert.equal(f.y, 1920); assert.equal(f.writes.length, count); assert.equal(f.pending, 0);
+});
+
+test('reduced motion and hidden or reading states never align automatically', () => {
+  const f = fixture(true); f.setReduced(true); f.nativeScrollTo(600); f.controller.beginNativeScroll(1);
+  f.nativeScrollTo(950); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.writes.length, 0); assert.equal(f.pending, 0);
+  f.setReduced(false); f.nativeScrollTo(600); f.controller.beginNativeScroll(1);
+  f.nativeScrollTo(950); f.controller.nativeScrolled(); f.setSettleAllowed(false); f.advance(1000);
+  assert.equal(f.writes.length, 0); assert.equal(f.pending, 0);
+  f.controller.dispose(); f.setSettleAllowed(true); f.controller.nativeScrolled(); f.advance(1000);
+  assert.equal(f.writes.length, 0); assert.equal(f.pending, 0);
 });
 
 test('manual input cancels both the countdown and an automatic movement in progress', () => {

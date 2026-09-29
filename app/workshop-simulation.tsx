@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { Play, Pause, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { phases, tables, peopleForPhase, papersForPhase, audiencePosition, interests, yourActivity, cameraForVisitor, thoughtBubbles } from './simulation-model';
 
@@ -15,12 +16,14 @@ export default function WorkshopSimulation() {
   const [step, setStep] = useState(0);
   const count = 20;
   const [interest, setInterest] = useState(0);
-  const [moving, setMoving] = useState(false);
   const [following, setFollowing] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [inView, setInView] = useState(true);
+  const [ambientMotion, setAmbientMotion] = useState(true);
+  const [pageVisible, setPageVisible] = useState(true);
   const root = useRef<HTMLDivElement>(null);
+  const roomViewport = useRef<HTMLDivElement>(null);
   const phase = phases[step];
   const grouped = ['groups', 'assembly', 'casework', 'exchange'].includes(phase.id);
   const isBreak = phase.id === 'break';
@@ -33,22 +36,16 @@ export default function WorkshopSimulation() {
   const closePreview = useCallback(() => setInspecting(null), []);
   const inspect = (id: RoomObjectId) => { setPlaying(false); setInspecting(id); };
   useEffect(() => {
-    if (reducedMotion) { setMoving(false); return; }
-    setMoving(true);
-    const timer = window.setTimeout(() => setMoving(false), playing ? 1800 : 700);
-    return () => window.clearTimeout(timer);
-  }, [step, interest, reducedMotion]);
-
-  useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     const sync = () => { setReducedMotion(preference.matches); if (preference.matches) setPlaying(false); };
     sync(); preference.addEventListener('change', sync);
     return () => preference.removeEventListener('change', sync);
   }, []);
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: .15 });
-    if (root.current) observer.observe(root.current);
-    const pauseWhenHidden = () => { if (document.hidden) setPlaying(false); };
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting && entry.intersectionRatio >= .05), { threshold: [0, .05] });
+    if (roomViewport.current) observer.observe(roomViewport.current);
+    const pauseWhenHidden = () => { setPageVisible(!document.hidden); if (document.hidden) setPlaying(false); };
+    pauseWhenHidden();
     document.addEventListener('visibilitychange', pauseWhenHidden);
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', pauseWhenHidden); };
   }, []);
@@ -65,7 +62,7 @@ export default function WorkshopSimulation() {
   const chooseStep = (index: number) => { setPlaying(false); setInspecting(null); setStep(index); revealScene(); };
   const play = () => { setInspecting(null); if (!playing) revealScene(); if (step === phases.length - 1) setStep(0); setPlaying(v => !v); };
 
-  return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${moving ? 'is-moving' : ''}`} ref={root}>
+  return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${ambientMotion && inView && pageVisible && !reducedMotion && !inspecting ? 'is-animated' : ''}`} ref={root}>
     <div className="simulation-toolbar"><div><span className="simulation-caption">YOUR VISIT TO THE WORKSHOP</span><span className="simulation-time">Choose an interest, then follow the character marked “you”.</span></div><span className="visitor-key"><svg viewBox="0 0 28 36" width="24" height="31" aria-hidden="true" shapeRendering="crispEdges"><path d="M7 21h5v12H7m9-12h5v12h-5" fill="#586566"/><path d="M6 13h16v13H6" fill="#47757c"/><path d="M8 2h12v12H8" fill="#d5ae8b"/><path d="M7 0h14v5H7m0 5h3v4H7" fill="#554b3d"/><path d="M11 8h2v2h-2m5-2h2v2h-2" fill="#303d39"/><path d="M12 14h4v11h-4" fill="#eee8d7"/></svg><span>Your participant</span></span></div>
     <fieldset className="interest-options"><legend>What would you like to explore?</legend><div className="interest-grid">{interests.map((item, index) => <label key={item.id} className={interest === index ? 'is-selected' : ''}><input type="radio" name="workshop-interest" value={item.id} checked={interest === index} onChange={() => { setPlaying(false); setInspecting(null); setInterest(index); setFollowing(true); revealScene(); }}/><span><strong>{item.title}</strong><small>{item.question}</small></span></label>)}</div></fieldset>
     <div className="simulation-body">
@@ -74,8 +71,8 @@ export default function WorkshopSimulation() {
       </nav>
       <div className="simulation-scene" id="workshop-scene" role="region" aria-labelledby="simulation-scene-title">
         <div className="scene-caption" aria-live={playing ? 'off' : 'polite'}><span>{String(step + 1).padStart(2, '0')} / 09</span><strong id="simulation-scene-title">{phase.title}</strong><small>{phase.minutes} min</small></div>
-        <div className="view-controls" role="group" aria-label="Simulation viewpoint"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}>Follow a participant</button></div>
-        <div className="room-stage"><div className="room-viewport"><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
+        <div className="view-controls" role="group" aria-label="Room view and motion"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}>Follow a participant</button><button type="button" className="character-motion" disabled={reducedMotion} aria-label={ambientMotion && !reducedMotion ? 'Pause character motion' : 'Resume character motion'} title={reducedMotion ? 'Character motion is off in your system settings' : ambientMotion ? 'Pause character motion' : 'Resume character motion'} onClick={() => setAmbientMotion(value => !value)}>{ambientMotion && !reducedMotion ? <Pause size={14} aria-hidden="true"/> : <Play size={14} aria-hidden="true"/>}</button></div>
+        <div className="room-stage"><div className="room-viewport" ref={roomViewport}><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
           <title id="room-title">{`${phase.title}: an illustrative workshop room`}</title>
           <desc id="room-description">{count} people including six organizers. {phase.action} Pixel characters represent participants. Your chosen interest is {chosen.title}. People and furniture show a possible arrangement, not a confirmed room plan.</desc>
           <defs>
@@ -130,7 +127,7 @@ export default function WorkshopSimulation() {
             return <g key={person.id} className="room-person" style={{ transform: `translate(${person.x}px, ${person.y}px)`, transitionDelay: reducedMotion ? '0ms' : `${(person.id % 6) * 45}ms` }} aria-hidden="true">
               <ellipse cy="16" rx="13" ry="5" fill="#716d5a" opacity=".18"/>
               {person.visitor && <ellipse cy="16" rx="18" ry="8" fill="none" stroke="#47757c" strokeWidth="1.4" strokeDasharray="3 3"/>}
-              <g className="pixel-person" shapeRendering="crispEdges" style={{animationDelay: `${person.id * -75}ms`}}>
+              <g className="pixel-person" shapeRendering="crispEdges" style={{'--idle-delay': `${person.id * -75}ms`} as CSSProperties}>
                 <g className="pixel-leg-left"><rect x="-6" y="9" width="5" height="9" fill="#566163"/><rect x="-7" y="16" width="6" height="3" fill="#454c46"/></g>
                 <g className="pixel-leg-right"><rect x="2" y="9" width="5" height="9" fill="#566163"/><rect x="2" y="16" width="6" height="3" fill="#454c46"/></g>
                 <rect x="-8" y="-3" width="16" height="15" fill={shirt}/>
