@@ -1,8 +1,25 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { nextReadingStop, TOUR_DELAY } from '../app/chapter-model.ts';
+import { nextReadingStop, nativeScrollIntent, TOUR_DELAY } from '../app/chapter-model.ts';
 import { papersForPhase } from '../app/simulation-model.ts';
 import { roomObjectsForPhase } from '../app/room-objects.ts';
+
+test('tapping a mobile step never re-arms snap before its click, but swiping does', () => {
+  assert.equal(nativeScrollIntent({type: 'pointerdown', control: true}), false);
+  assert.equal(nativeScrollIntent({type: 'touchstart', control: true}), false);
+  assert.equal(nativeScrollIntent({type: 'focusin', control: true}), false);
+  assert.equal(nativeScrollIntent({type: 'touchmove', control: true}), true);
+  assert.equal(nativeScrollIntent({type: 'wheel'}), true);
+  assert.equal(nativeScrollIntent({type: 'wheel', zoom: true}), false);
+});
+
+test('keyboard control activation and text editing preserve selection; page navigation resumes snap', () => {
+  assert.equal(nativeScrollIntent({type: 'keydown', key: ' ', control: true}), false);
+  assert.equal(nativeScrollIntent({type: 'keydown', key: 'ArrowDown', tab: true}), false);
+  assert.equal(nativeScrollIntent({type: 'keydown', key: 'Home', typing: true}), false);
+  for (const key of [' ', 'ArrowDown', 'PageDown', 'PageUp', 'Home', 'End']) assert.equal(nativeScrollIntent({type: 'keydown', key}), true);
+  assert.equal(nativeScrollIntent({type: 'pointerdown', scrollbar: true}), true);
+});
 
 test('the three-second tour aligns short chapters and preserves long chapter content', () => {
   assert.equal(TOUR_DELAY, 3000);

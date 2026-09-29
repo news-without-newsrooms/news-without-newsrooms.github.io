@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
-import { chapters, TOUR_DELAY, nextReadingStop } from './chapter-model';
+import { chapters, TOUR_DELAY, nextReadingStop, nativeScrollIntent } from './chapter-model';
 import { createNavigationController } from './navigation-controller';
 import { connectPageScroll, headerOffset } from './page-scroll';
 export { chapters } from './chapter-model';
@@ -73,10 +73,15 @@ export default function ChapterNavigation() {
     };
     const manualInput = (event: Event) => {
       const target = event.target instanceof Element ? event.target : null;
-      if (target?.closest('.chapter-auto') && event.type !== 'wheel' && event.type !== 'touchstart') return;
-      const typing = target?.closest('input, textarea, select, [contenteditable]');
-      const scrollKey = event instanceof KeyboardEvent && !typing && ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '].includes(event.key);
-      if (event.type === 'wheel' || event.type === 'touchstart' || scrollKey || (event.type === 'pointerdown' && target === html)) controller.nativeInput();
+      if (target?.closest('.chapter-auto') && event.type !== 'wheel' && event.type !== 'touchmove') return;
+      const resume = nativeScrollIntent({
+        type: event.type, key: event instanceof KeyboardEvent ? event.key : undefined,
+        typing: !!target?.closest('input, textarea, select, [contenteditable]'),
+        control: !!target?.closest('button, a, summary, [role="tab"]'),
+        tab: !!target?.closest('[role="tab"]'), scrollbar: target === html,
+        zoom: event instanceof WheelEvent && event.ctrlKey,
+      });
+      if (resume) controller.nativeInput();
       else controller.pause();
     };
     const click = (event: MouseEvent) => {
@@ -106,7 +111,7 @@ export default function ChapterNavigation() {
       if (target) controller.navigate(() => target.getBoundingClientRect().top + scrollY - headerOffset());
     };
     // Passive input listeners cancel our work without consuming native wheel/touch input.
-    const inputs = ['wheel', 'pointerdown', 'touchstart', 'keydown', 'focusin'];
+    const inputs = ['wheel', 'pointerdown', 'touchstart', 'touchmove', 'keydown', 'focusin'];
     // Cancel before React handles the same input and requests a new destination.
     inputs.forEach(type => document.addEventListener(type, manualInput, { passive: true, capture: true }));
     document.addEventListener('click', click);
