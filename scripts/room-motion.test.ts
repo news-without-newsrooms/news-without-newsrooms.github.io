@@ -1,11 +1,36 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { phases, peopleForPhase, papersForPhase, cameraForVisitor } from '../app/simulation-model.ts';
-import { clearWalkSegment, walkRoute, sampleRoute, createRoomMotion, createRoomPlayback, TRAVEL_MS, CYCLE_MS } from '../app/room-motion.ts';
+import { clearWalkSegment, walkRoute, sampleRoute, createRoomMotion, createRoomPlayback, roomBrowserClock, TRAVEL_MS, CYCLE_MS } from '../app/room-motion.ts';
 import type { RoomFrame } from '../app/room-motion.ts';
 import { projectRoomObject, roomObjectsForPhase } from '../app/room-objects.ts';
 
 const pose = (step: number, interest = 0) => ({ people: peopleForPhase(phases[step].id, 20, interest), papers: papersForPhase(phases[step].id) });
+
+test('browser clock preserves native method receivers during initial suspension and playback', () => {
+  let next = 0;
+  const frames = new Set<number>(), timers = new Set<number>();
+  const requireWindow = (value: unknown) => { if (value !== browser) throw new TypeError('Illegal invocation'); };
+  const browser = {
+    performance: { now() { assert.equal(this, browser.performance); return 0; } },
+    requestAnimationFrame() { requireWindow(this); const id = ++next; frames.add(id); return id; },
+    cancelAnimationFrame(id: number) { requireWindow(this); frames.delete(id); },
+    setTimeout() { requireWindow(this); const id = ++next; timers.add(id); return id; },
+    clearTimeout(id: number) { requireWindow(this); timers.delete(id); },
+  };
+  const clock = roomBrowserClock(browser as unknown as Parameters<typeof roomBrowserClock>[0]);
+  // Positive control: the previous host assignment fails as soon as the initial scene suspends.
+  const broken = createRoomMotion(pose(0), {...clock.motion, cancel: browser.cancelAnimationFrame, paint() {}});
+  assert.throws(() => broken.suspend(true), /Illegal invocation/);
+  const motion = createRoomMotion(pose(0), {...clock.motion, paint() {}});
+  assert.doesNotThrow(() => motion.suspend(true));
+  motion.suspend(false); motion.move(pose(1)); assert.equal(frames.size, 1);
+  motion.suspend(true); assert.equal(frames.size, 0);
+  const playback = createRoomPlayback(9, {...clock.playback, advance() {}, state() {}});
+  playback.play(0); assert.equal(timers.size, 1);
+  playback.pause(); assert.equal(timers.size, 0);
+  motion.dispose(); playback.dispose();
+});
 function motionHarness() {
   let now = 0, id = 0, output: RoomFrame;
   const frames = new Map<number, () => void>();

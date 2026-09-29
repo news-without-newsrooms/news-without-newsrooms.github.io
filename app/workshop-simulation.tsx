@@ -9,7 +9,7 @@ import RoomInspector from './room-inspector';
 import { roomObjectsForPhase, projectRoomObject } from './room-objects';
 import type { RoomObjectId } from './room-objects';
 import PittsburghScene from './pittsburgh-scene';
-import { createRoomMotion, createRoomPlayback, TRAVEL_MS } from './room-motion';
+import { createRoomMotion, createRoomPlayback, roomBrowserClock, TRAVEL_MS } from './room-motion';
 
 const groupColors = ['#637971', '#a27f65', '#687a92'];
 const writeAttribute = (node: Element | null | undefined, name: string, value: string) => {
@@ -55,7 +55,7 @@ export default function WorkshopSimulation() {
   const inspect = (id: RoomObjectId) => { pausePlayback(); setInspecting(id); };
   useLayoutEffect(() => {
     motion.current = createRoomMotion(initial.current, {
-      now: () => performance.now(), request: callback => requestAnimationFrame(callback), cancel: cancelAnimationFrame,
+      ...roomBrowserClock(window).motion,
       paint: frame => {
         if (!root.current) return;
         root.current.dataset.travelling = String(frame.travelling);
@@ -88,7 +88,7 @@ export default function WorkshopSimulation() {
   useLayoutEffect(() => { motion.current?.suspend(!inView || !pageVisible || !!inspecting || motionPaused); }, [inView, pageVisible, inspecting, motionPaused]);
   useEffect(() => {
     playback.current = createRoomPlayback(phases.length, {
-      delay: (callback, ms) => window.setTimeout(callback, ms), cancel: clearTimeout,
+      ...roomBrowserClock(window).playback,
       advance: setStep, state: setPlaying,
     });
     return () => { playback.current?.dispose(); playback.current = null; };

@@ -9,6 +9,21 @@ const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 
+/** Native Window methods must keep their receiver when a controller calls them. */
+export function roomBrowserClock(browser: Pick<Window, 'performance' | 'requestAnimationFrame' | 'cancelAnimationFrame' | 'setTimeout' | 'clearTimeout'>) {
+  return {
+    motion: {
+      now: () => browser.performance.now(),
+      request: (callback: () => void) => browser.requestAnimationFrame(callback),
+      cancel: (id: number) => browser.cancelAnimationFrame(id),
+    },
+    playback: {
+      delay: (callback: () => void, ms: number) => browser.setTimeout(callback, ms),
+      cancel: (id: number) => browser.clearTimeout(id),
+    },
+  };
+}
+
 // Keep a walking person's center clear of the permanent tables and side furniture.
 export function clearWalkSegment(a: Point, b: Point) {
   if ([a, b].some(p => p.x < 100 || p.x > 700 || p.y < 145 || p.y > 419)) return false;
