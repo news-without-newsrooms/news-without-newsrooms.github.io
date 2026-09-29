@@ -13,6 +13,16 @@ export const phases = [
 
 export type PhaseId = typeof phases[number]['id'];
 export type Point = { x: number; y: number };
+
+/** Keep a readable room when chrome is taller than the viewport allows.
+ * The chapter then grows naturally instead of overlapping or clipping its heading. */
+export function roomBodyHeight(viewport: number, header: number, beforeBody: number, afterBody: number) {
+  return Math.max(400, Math.floor(viewport - header - beforeBody - afterBody));
+}
+
+// A small idle cast keeps the room alive without animating every body continuously.
+export function hasIdleMotion(id: number) { return [2, 6, 9, 14, 18].includes(id); }
+
 export const tables = [
   { x: 183, y: 321, label: 'The post' },
   { x: 400, y: 321, label: 'The spread' },

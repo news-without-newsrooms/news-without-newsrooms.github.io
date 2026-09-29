@@ -38,17 +38,17 @@ const stages = [
 ];
 
 const sessions = [
-  { n: '01', title: 'Build a shared picture', description: 'Common ground, then participants’ contexts.', rows: [
-    ['10', 'Opening scene', 'Look at a labeled composite post. Write what you would check before believing or sharing.'],
-    ['25', 'Panel conversation', 'A journalist, a platform practitioner, and a policy voice each connect a case to one consequential decision. Speakers to be confirmed.'],
-    ['45', 'Lightning contributions', 'Up to fifteen three-minute talks, each bringing one situation and one question.'],
-    ['10', 'Find your group', 'Choose the post, spread, or aftermath. We balance groups across experiences and contexts.'],
+  { n: '01', title: 'Build a shared picture', rows: [
+    ['10', 'Opening scene', 'Read a labeled composite post and name what you would check.'],
+    ['25', 'Panel conversation', 'Journalism, platforms, and policy. Speakers to be confirmed.'],
+    ['45', 'Lightning contributions', 'Up to fifteen three-minute talks: one situation and one question.'],
+    ['10', 'Find your group', 'Choose post, spread, or aftermath; mix experiences across groups.'],
   ] },
-  { n: '02', title: 'Turn observations into questions', description: 'Casework, exchange, and a shared research agenda.', rows: [
-    ['35', 'Work with a case', 'In pairs or trios, connect a record to interface cues, user actions, unknowns, and a research question.'],
-    ['15', 'Assemble the sequence', 'Each group shares its findings. Keep documented, unknown, and disputed items visible.'],
-    ['20', 'Try the idea elsewhere', 'Exchange worksheets. Test what a design or practice would need to work at another stage or in another context.'],
-    ['20', 'Choose what comes next', 'Propose and rank research questions, retain dissent, and find volunteer owners and next steps.'],
+  { n: '02', title: 'Turn observations into questions', rows: [
+    ['35', 'Work with a case', 'Link records, cues, actions, and questions in pairs or trios.'],
+    ['15', 'Assemble the sequence', 'Compare documented, unknown, and disputed observations.'],
+    ['20', 'Try the idea elsewhere', 'Exchange worksheets; test an idea in another stage or context.'],
+    ['20', 'Choose what comes next', 'Rank questions, retain dissent, and find volunteer owners and next steps.'],
   ] },
 ];
 
@@ -87,18 +87,13 @@ export default function Home() {
     <main id="main">
       <div className="hero-backdrop chapter" id="overview">
       <section className="hero wrap" aria-labelledby="page-title">
-        <div className="hero-index"><p>JOURNALISM / HCI / AI / POLICY</p><p>PITTSBURGH, MAY 2027 <span>DATE TO BE CONFIRMED</span></p></div>
+        <div className="hero-index"><p>JOURNALISM / HCI / AI / POLICY</p><p>PITTSBURGH, MAY 2027 <a href="https://chi2027.acm.org/" target="_blank" rel="noreferrer">2027 CHI <Arrow external /></a></p></div>
         <h1 id="page-title" aria-label="News Without Newsrooms"><span className="title-line">News Without</span><span className="title-line title-last">Newsrooms</span></h1>
         <div className="hero-band">
           <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p>Belief, Spread, and Aftermath as Questions for Journalism and HCI</p></div>
-          <div className="hero-copy"><p className="hero-subtitle">What can people see, verify, and do when a post looks like news?</p><p className="hero-description">Examine news-like posts, their circulation, and what happens when later information arrives.</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
+          <div className="hero-copy"><p className="hero-subtitle">What can people see, verify, and do when a post looks like news?</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
         </div>
       </section>
-      <div className="facts wrap" aria-label="Workshop at a glance">
-        <div><span className="label">THE FORMAT</span><strong>Two 90-minute sessions</strong><span>In person · Proposed program</span></div>
-        <div><span className="label">THE ROOM</span><strong>15–25 participants</strong><span>Including organizers · Across disciplines</span></div>
-        <div><span className="label">THE INVITATION</span><strong>A case and a question</strong><a href="#participate">How to take part <Arrow /></a></div>
-      </div>
       </div>
 
       <section className="section wrap chapter" id="workshop" aria-labelledby="workshop-title">
@@ -114,9 +109,6 @@ export default function Home() {
             <StagePreview stage={s} />
           </Tabs.Panel>)}
         </Tabs.Root>
-        <div className="case-material"><div><div><h3>Case material and participants’ contexts</h3><p>A documented Korean accusation-video sequence anchors the work. Korean and Japanese comparison cases offer different later outcomes. Participants bring other settings into the conversation.</p></div></div>
-          <details className="figure-details"><summary>View the case framework <ChevronDown size={16} aria-hidden="true" /></summary><figure><img src={`${base}workshop-overview.png`} width="2200" height="1100" loading="lazy" alt="A labeled composite post alongside a schematic case sequence. Different records extend to different points; audience exposure remains a separate evidence question."/><figcaption>The composite illustrates the exercise and does not depict a real person or post. A later correction or ruling does not establish that earlier viewers saw it. <a href={`${base}workshop-overview.png`} target="_blank" rel="noreferrer">Open full-size figure <Arrow external /></a></figcaption></figure></details>
-        </div>
       </section>
 
       <section className="simulation-chapter chapter" id="walkthrough" aria-labelledby="walkthrough-title"><div className="simulation-chapter-inner">
@@ -125,10 +117,10 @@ export default function Home() {
       </div></section>
 
       <section className="section wrap chapter" id="program" aria-labelledby="program-title">
-        <div className="section-heading"><div><p className="eyebrow">03 / PROGRAM DETAILS</p><h2 id="program-title">The proposed<br/>program.</h2></div><p className="section-intro">Two sessions move from common ground to research questions with a next step. All timings are provisional.</p></div>
-        <div className="sessions">{sessions.map(s => <article className="session" key={s.n}><header className="session-heading"><span className="session-label">SESSION {s.n}<span>90 MIN</span></span><h3>{s.title}</h3><p>{s.description}</p></header><ol>{s.rows.map(([mins, title, description]) => <li key={title}><div className="duration"><strong>{mins}</strong><span>min</span></div><div><h4>{title}</h4><p>{description}</p></div></li>)}</ol></article>)}</div>
-        <div className="schedule-note"><span className="label">BETWEEN SESSIONS</span><p>The plan allows a 30-minute conference break. Final timing and room details follow acceptance. If sessions are 75 minutes, we will retain every activity with shorter segments.</p></div>
-        <div className="outcomes"><div className="outcome-heading"><p className="eyebrow">WHAT WE TAKE FORWARD</p><h3>Workshop outputs</h3></div><div><span>01</span><h4>A shared sequence</h4><p>Records, user actions, unknowns, and disagreements connected across stages.</p></div><div><span>02</span><h4>Questions with next steps</h4><p>Situated research questions, volunteer owners, and ideas to pursue together.</p></div><div><span>03</span><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
+        <div className="section-heading"><div><p className="eyebrow">03 / PROGRAM DETAILS</p><h2 id="program-title">The proposed program.</h2></div><p className="section-intro">Two 90-minute sessions, from shared cases to research questions with a next step.</p></div>
+        <div className="sessions">{sessions.map(s => <article className="session" key={s.n}><header className="session-heading"><span className="session-label">SESSION {s.n}<span>90 MIN</span></span><h3>{s.title}</h3></header><ol>{s.rows.map(([mins, title, description]) => <li key={title}><div className="activity-line"><h4>{title}</h4><span className="activity-duration">{mins} min</span></div><p>{description}</p></li>)}</ol></article>)}</div>
+        <p className="schedule-note">Provisional timings, with a 30-minute conference break. If sessions are 75 minutes, every activity stays with shorter segments. Final timing and room details follow acceptance.</p>
+        <div className="outcomes"><h3>What we take forward</h3><div><h4>A shared sequence</h4><p>Records, actions, unknowns, and disagreements across stages.</p></div><div><h4>Questions with next steps</h4><p>Research questions, volunteer owners, and ideas to pursue together.</p></div><div><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
       </section>
 
       <section className="participation-section chapter" id="participate" aria-labelledby="participate-title"><div className="wrap participation-layout">

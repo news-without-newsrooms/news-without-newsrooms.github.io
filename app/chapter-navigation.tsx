@@ -30,7 +30,6 @@ export default function ChapterNavigation() {
     const update = () => {
       frame = 0;
       const index = currentIndex(); setActive(index);
-      sections.forEach((section, i) => section.classList.toggle('is-current-chapter', i === index));
     };
     const queueUpdate = () => { if (!frame) frame = requestAnimationFrame(update); };
     const observeScroll = queueUpdate;
@@ -127,7 +126,6 @@ export default function ChapterNavigation() {
     // Tour playback is explicit. Page loading, scrolling, and resizing never start it.
     return () => {
       controller.dispose(); disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
-      sections.forEach(section => section.classList.remove('is-current-chapter'));
       inputs.forEach(type => document.removeEventListener(type, manualInput, true));
       document.removeEventListener('click', click); document.removeEventListener('visibilitychange', visibility);
       window.removeEventListener('scroll', observeScroll); window.removeEventListener('resize', resize);

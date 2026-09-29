@@ -2,9 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Play, Pause, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
-import { phases, tables, peopleForPhase, papersForPhase, audiencePosition, interests, yourActivity, cameraForVisitor, thoughtBubbles } from './simulation-model';
+import { phases, tables, peopleForPhase, papersForPhase, audiencePosition, interests, yourActivity, cameraForVisitor, thoughtBubbles, roomBodyHeight, hasIdleMotion } from './simulation-model';
 
-import { revealSelection } from './page-scroll';
+import { headerOffset, revealSelection } from './page-scroll';
 import RoomInspector from './room-inspector';
 import { roomObjectsForPhase, projectRoomObject } from './room-objects';
 import type { RoomObjectId } from './room-objects';
@@ -19,9 +19,11 @@ export default function WorkshopSimulation() {
   const [following, setFollowing] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [inView, setInView] = useState(true);
+  const [inView, setInView] = useState(false);
   const [ambientMotion, setAmbientMotion] = useState(true);
   const [pageVisible, setPageVisible] = useState(true);
+  const [travelling, setTravelling] = useState(false);
+  const previousLayout = useRef('0:0');
   const root = useRef<HTMLDivElement>(null);
   const roomViewport = useRef<HTMLDivElement>(null);
   const phase = phases[step];
@@ -35,6 +37,43 @@ export default function WorkshopSimulation() {
   const roomObjects = roomObjectsForPhase(phase.id);
   const closePreview = useCallback(() => setInspecting(null), []);
   const inspect = (id: RoomObjectId) => { setPlaying(false); setInspecting(id); };
+  useEffect(() => {
+    const element = root.current;
+    const section = element?.closest<HTMLElement>('.simulation-chapter');
+    if (!element || !section) return;
+    const heading = section.querySelector<HTMLElement>('.section-heading')!;
+    const toolbar = element.querySelector<HTMLElement>('.simulation-toolbar')!;
+    const controls = element.querySelector<HTMLElement>('.simulation-controls')!;
+    const notes = element.querySelector<HTMLElement>('.visit-notes>summary')!;
+    const desktop = matchMedia('(min-width:1000px) and (min-height:780px)');
+    let frame = 0, disposed = false;
+    const measure = () => {
+      frame = 0;
+      if (!desktop.matches) { element.style.removeProperty('--visit-body-height'); return; }
+      // Read only on resize/layout changes, never on scroll or animation frames.
+      const beforeBody = element.getBoundingClientRect().top - section.getBoundingClientRect().top + toolbar.getBoundingClientRect().height + 1;
+      const afterBody = controls.getBoundingClientRect().height + notes.getBoundingClientRect().height + parseFloat(getComputedStyle(section).paddingBottom) + 3;
+      const value = roomBodyHeight(innerHeight, headerOffset(), beforeBody, afterBody) + 'px';
+      if (element.style.getPropertyValue('--visit-body-height') !== value) element.style.setProperty('--visit-body-height', value);
+    };
+    const queue = () => { if (!disposed && !frame) frame = requestAnimationFrame(measure); };
+    const observer = new ResizeObserver(queue);
+    [heading, toolbar, controls, notes, document.querySelector('.site-header')].forEach(node => { if (node) observer.observe(node); });
+    window.addEventListener('resize', queue);
+    void document.fonts.ready.then(queue);
+    queue();
+    return () => { disposed = true; observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('resize', queue); };
+  }, []);
+  useEffect(() => {
+    const key = `${step}:${interest}`;
+    const changed = previousLayout.current !== key;
+    previousLayout.current = key;
+    if (!changed || reducedMotion) { setTravelling(false); return; }
+    setTravelling(true);
+    // 1.45 s travel plus up to 140 ms stagger, then only the idle cast moves.
+    const timer = window.setTimeout(() => setTravelling(false), 1600);
+    return () => clearTimeout(timer);
+  }, [step, interest, reducedMotion]);
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     const sync = () => { setReducedMotion(preference.matches); if (preference.matches) setPlaying(false); };
@@ -62,8 +101,8 @@ export default function WorkshopSimulation() {
   const chooseStep = (index: number) => { setPlaying(false); setInspecting(null); setStep(index); revealScene(); };
   const play = () => { setInspecting(null); if (!playing) revealScene(); if (step === phases.length - 1) setStep(0); setPlaying(v => !v); };
 
-  return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${ambientMotion && inView && pageVisible && !reducedMotion && !inspecting ? 'is-animated' : ''}`} ref={root}>
-    <div className="simulation-toolbar"><div><span className="simulation-caption">YOUR VISIT TO THE WORKSHOP</span><span className="simulation-time">Choose an interest, then follow the character marked “you”.</span></div><span className="visitor-key"><svg viewBox="0 0 28 36" width="24" height="31" aria-hidden="true" shapeRendering="crispEdges"><path d="M7 21h5v12H7m9-12h5v12h-5" fill="#586566"/><path d="M6 13h16v13H6" fill="#47757c"/><path d="M8 2h12v12H8" fill="#d5ae8b"/><path d="M7 0h14v5H7m0 5h3v4H7" fill="#554b3d"/><path d="M11 8h2v2h-2m5-2h2v2h-2" fill="#303d39"/><path d="M12 14h4v11h-4" fill="#eee8d7"/></svg><span>Your participant</span></span></div>
+  return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${travelling ? 'is-travelling' : ''} ${ambientMotion && inView && pageVisible && !reducedMotion && !inspecting ? 'is-animated' : ''}`} ref={root}>
+    <div className="simulation-toolbar"><div><span className="simulation-caption">WORKSHOP PREVIEW</span></div><span className="visitor-key"><svg viewBox="0 0 28 36" width="24" height="31" aria-hidden="true" shapeRendering="crispEdges"><path d="M7 21h5v12H7m9-12h5v12h-5" fill="#586566"/><path d="M6 13h16v13H6" fill="#47757c"/><path d="M8 2h12v12H8" fill="#d5ae8b"/><path d="M7 0h14v5H7m0 5h3v4H7" fill="#554b3d"/><path d="M11 8h2v2h-2m5-2h2v2h-2" fill="#303d39"/><path d="M12 14h4v11h-4" fill="#eee8d7"/></svg><span>Your participant</span></span></div>
     <div className="simulation-body">
       <aside className="simulation-console" aria-label="Your visit controls">
     <fieldset className="interest-options"><legend>Your perspective</legend><div className="interest-grid">{interests.map((item, index) => <label key={item.id} className={interest === index ? 'is-selected' : ''}><input type="radio" name="workshop-interest" value={item.id} checked={interest === index} onChange={() => { setPlaying(false); setInspecting(null); setInterest(index); setFollowing(true); revealScene(); }}/><span><strong>{item.title}</strong></span></label>)}</div><p className="interest-question">{chosen.question}</p></fieldset>
@@ -74,7 +113,7 @@ export default function WorkshopSimulation() {
       </aside>
       <div className="simulation-scene" id="workshop-scene" role="region" aria-labelledby="simulation-scene-title">
         <div className="scene-caption" aria-live={playing ? 'off' : 'polite'}><span>{String(step + 1).padStart(2, '0')} / 09</span><strong id="simulation-scene-title">{phase.title}</strong><small>{phase.minutes} min</small></div>
-        <div className="view-controls" role="group" aria-label="Room view and motion"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}>Follow a participant</button><button type="button" className="character-motion" disabled={reducedMotion} aria-label={ambientMotion && !reducedMotion ? 'Pause character motion' : 'Resume character motion'} title={reducedMotion ? 'Character motion is off in your system settings' : ambientMotion ? 'Pause character motion' : 'Resume character motion'} onClick={() => setAmbientMotion(value => !value)}>{ambientMotion && !reducedMotion ? <Pause size={14} aria-hidden="true"/> : <Play size={14} aria-hidden="true"/>}</button></div>
+        <div className="view-controls" role="group" aria-label="Room view and motion"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}>Follow a participant</button><button type="button" className="character-motion" disabled={reducedMotion} aria-label={ambientMotion && !reducedMotion ? 'Pause idle motion' : 'Resume idle motion'} title={reducedMotion ? 'Idle motion is off in your system settings' : ambientMotion ? 'Pause idle motion' : 'Resume idle motion'} onClick={() => setAmbientMotion(value => !value)}>{ambientMotion && !reducedMotion ? <Pause size={14} aria-hidden="true"/> : <Play size={14} aria-hidden="true"/>}</button></div>
         <div className="room-stage"><div className="room-viewport" ref={roomViewport}><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
           <title id="room-title">{`${phase.title}: an illustrative workshop room`}</title>
           <desc id="room-description">{count} people including six organizers. {phase.action} Pixel characters represent participants. Your chosen interest is {chosen.title}. People and furniture show a possible arrangement, not a confirmed room plan.</desc>
@@ -127,7 +166,7 @@ export default function WorkshopSimulation() {
             const skin = ['#d9b495','#b48c6d','#d2aa84','#a47d60'][person.id % 4];
             const hair = ['#514b40','#81735c','#40463f','#746052'][person.id % 4];
             const shirt = person.visitor ? '#47757c' : person.organizer ? '#56644b' : groupColors[person.group];
-            return <g key={person.id} className="room-person" style={{ transform: `translate(${person.x}px, ${person.y}px)`, transitionDelay: reducedMotion ? '0ms' : `${(person.id % 5) * 90}ms` }} aria-hidden="true">
+            return <g key={person.id} className={`room-person${hasIdleMotion(person.id) ? ' has-idle-motion' : ''}`} style={{ transform: `translate(${person.x}px, ${person.y}px)`, transitionDelay: reducedMotion ? '0ms' : `${(person.id % 5) * 35}ms` }} aria-hidden="true">
               <ellipse cy="16" rx="13" ry="5" fill="#716d5a" opacity=".18"/>
               {person.visitor && <ellipse cy="16" rx="18" ry="8" fill="none" stroke="#47757c" strokeWidth="1.4" strokeDasharray="3 3"/>}
               <g className="pixel-person" shapeRendering="crispEdges" style={{'--idle-delay': `${person.id * -75}ms`} as CSSProperties}>

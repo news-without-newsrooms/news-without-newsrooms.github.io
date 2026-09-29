@@ -1,6 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { phases, interests, peopleForPhase, papersForPhase, cameraForVisitor, yourActivity, tables } from '../app/simulation-model.ts';
+import { phases, interests, peopleForPhase, papersForPhase, cameraForVisitor, yourActivity, tables, roomBodyHeight, hasIdleMotion } from '../app/simulation-model.ts';
+
+test('room budget reserves actual heading and controls, with natural overflow on short screens', () => {
+  assert.equal(roomBodyHeight(1000, 88, 180, 130), 602);
+  // A wrapping heading consumes room space rather than overlapping the toolbar.
+  assert.equal(roomBodyHeight(1000, 88, 220, 130), 562);
+  assert.equal(roomBodyHeight(1000, 108, 220, 130), 542);
+  assert.equal(roomBodyHeight(780, 108, 220, 130), 400);
+  assert.equal(roomBodyHeight(600, 108, 220, 130), 400);
+});
+
+test('idle movement is limited to five people, including the featured participant', () => {
+  const people = peopleForPhase('opening', 20);
+  assert.equal(people.filter(p => hasIdleMotion(p.id)).length, 5);
+  assert.ok(hasIdleMotion(people.find(p => p.visitor)!.id));
+});
 
 test('program preserves two 90-minute sessions with a separate provisional break', () => {
   assert.equal(phases.length, 9);
