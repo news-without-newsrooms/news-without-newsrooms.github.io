@@ -11,8 +11,7 @@ export type NavigationEnvironment = {
   reducedMotion: () => boolean;
   canTour: () => boolean;
   nextTourTarget: () => number | null;
-  canSettle?: () => boolean;
-  settleTarget?: (from: number, to: number) => number | null;
+  setNativeSnap?: (enabled: boolean) => void;
   onState: (state: NavigationState) => void;
   tourDelay: number;
 };
@@ -21,7 +20,6 @@ export type NavigationEnvironment = {
 export function createNavigationController(env: NavigationEnvironment) {
   let frame: number | null = null, timer: number | null = null;
   let generation = 0, playing = false, waiting = false, disposed = false;
-  let gestureFrom: number | null = null, gestureDirection = 0;
   const emit = () => env.onState({ playing, waiting });
   const cancelWork = () => {
     generation++;
@@ -31,7 +29,6 @@ export function createNavigationController(env: NavigationEnvironment) {
   };
   const pause = () => {
     cancelWork();
-    gestureFrom = null; gestureDirection = 0;
     if (playing || waiting) { playing = waiting = false; emit(); }
   };
   const clamp = (top: number) => Math.max(0, Math.min(top, env.maxY()));
@@ -51,6 +48,8 @@ export function createNavigationController(env: NavigationEnvironment) {
   };
   const move = (destination: () => number | null, automatic = false) => {
     cancelWork();
+    // Browser snapping and requested RAF movement never own scrolling together.
+    env.setNativeSnap?.(false);
     waiting = false; emit();
     const token = generation;
     // Measure after the selection's React commit, not against the outgoing panel.
@@ -79,37 +78,15 @@ export function createNavigationController(env: NavigationEnvironment) {
       frame = env.frame(tick);
     });
   };
-  const nativeScrolled = () => {
-    if (gestureFrom === null || disposed || playing) return;
-    if (timer !== null) env.cancelDelay(timer);
-    const token = generation;
-    timer = env.delay(() => {
-      timer = null;
-      if (token !== generation || disposed || gestureFrom === null) return;
-      if (env.reducedMotion() || !env.canSettle?.()) return;
-      const from = gestureFrom;
-      gestureFrom = null; gestureDirection = 0;
-      // The next native input can cancel this pending frame, just like a tab click.
-      move(() => env.settleTarget?.(from, env.readY()) ?? null);
-    }, 220);
-  };
   return {
     navigate(destination: () => number | null) { pause(); if (!disposed) move(destination); },
-    beginNativeScroll(direction = 0) {
-      const previous = gestureFrom, previousDirection = gestureDirection;
-      pause();
-      if (disposed || env.reducedMotion() || !env.settleTarget) return;
-      gestureFrom = previous !== null && (!direction || direction === previousDirection) ? previous : env.readY();
-      gestureDirection = direction;
-      nativeScrolled();
-    },
-    nativeScrolled,
+    nativeInput() { pause(); if (!disposed) env.setNativeSnap?.(true); },
     play() {
       pause();
       if (disposed || !env.canTour() || env.reducedMotion()) return;
       playing = true; scheduleTour();
     },
     pause,
-    dispose() { pause(); disposed = true; },
+    dispose() { pause(); env.setNativeSnap?.(true); disposed = true; },
   };
 }
