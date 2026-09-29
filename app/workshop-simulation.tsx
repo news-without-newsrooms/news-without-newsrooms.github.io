@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Play, Pause, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { phases, tables, peopleForPhase, papersForPhase, audiencePosition, interests, yourActivity, cameraForVisitor, thoughtBubbles } from './simulation-model';
 
+import { revealSelection } from './page-scroll';
 import RoomInspector from './room-inspector';
 import { roomObjectsForPhase, projectRoomObject } from './room-objects';
 import type { RoomObjectId } from './room-objects';
@@ -34,7 +35,7 @@ export default function WorkshopSimulation() {
   useEffect(() => {
     if (reducedMotion) { setMoving(false); return; }
     setMoving(true);
-    const timer = window.setTimeout(() => setMoving(false), 1800);
+    const timer = window.setTimeout(() => setMoving(false), playing ? 1800 : 700);
     return () => window.clearTimeout(timer);
   }, [step, interest, reducedMotion]);
 
@@ -60,17 +61,19 @@ export default function WorkshopSimulation() {
     return () => window.clearTimeout(timer);
   }, [playing, reducedMotion, inView, step, inspecting]);
 
-  const chooseStep = (index: number) => { setPlaying(false); setInspecting(null); setStep(index); };
-  const play = () => { if (step === phases.length - 1) setStep(0); setPlaying(v => !v); };
+  const revealScene = () => revealSelection(() => root.current?.querySelector<HTMLElement>('.simulation-body') ?? null);
+  const chooseStep = (index: number) => { setPlaying(false); setInspecting(null); setStep(index); revealScene(); };
+  const play = () => { setInspecting(null); if (!playing) revealScene(); if (step === phases.length - 1) setStep(0); setPlaying(v => !v); };
 
   return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${moving ? 'is-moving' : ''}`} ref={root}>
     <div className="simulation-toolbar"><div><span className="simulation-caption">YOUR VISIT TO THE WORKSHOP</span><span className="simulation-time">Choose an interest, then follow the character marked “you”.</span></div><span className="visitor-key"><svg viewBox="0 0 28 36" width="24" height="31" aria-hidden="true" shapeRendering="crispEdges"><path d="M7 21h5v12H7m9-12h5v12h-5" fill="#586566"/><path d="M6 13h16v13H6" fill="#47757c"/><path d="M8 2h12v12H8" fill="#d5ae8b"/><path d="M7 0h14v5H7m0 5h3v4H7" fill="#554b3d"/><path d="M11 8h2v2h-2m5-2h2v2h-2" fill="#303d39"/><path d="M12 14h4v11h-4" fill="#eee8d7"/></svg><span>Your participant</span></span></div>
-    <fieldset className="interest-options"><legend>What would you like to explore?</legend><div className="interest-grid">{interests.map((item, index) => <label key={item.id} className={interest === index ? 'is-selected' : ''}><input type="radio" name="workshop-interest" value={item.id} checked={interest === index} onChange={() => { setPlaying(false); setInterest(index); setFollowing(true); }}/><span><strong>{item.title}</strong><small>{item.question}</small></span></label>)}</div></fieldset>
+    <fieldset className="interest-options"><legend>What would you like to explore?</legend><div className="interest-grid">{interests.map((item, index) => <label key={item.id} className={interest === index ? 'is-selected' : ''}><input type="radio" name="workshop-interest" value={item.id} checked={interest === index} onChange={() => { setPlaying(false); setInspecting(null); setInterest(index); setFollowing(true); revealScene(); }}/><span><strong>{item.title}</strong><small>{item.question}</small></span></label>)}</div></fieldset>
     <div className="simulation-body">
       <nav className="phase-list" aria-label="Workshop moments">
-        {phases.map((p, index) => <button key={p.id} className={index === step ? 'is-current' : ''} onClick={() => chooseStep(index)} aria-current={index === step ? 'step' : undefined}><span className="phase-order">{String(index + 1).padStart(2, '0')}</span><span>{p.title}</span><small>{p.minutes}m</small></button>)}
+        {phases.map((p, index) => <button type="button" key={p.id} aria-controls="workshop-scene" aria-label={`${String(index + 1).padStart(2, '0')}. ${p.title}, ${p.minutes} minutes`} className={index === step ? 'is-current' : ''} onClick={() => chooseStep(index)} aria-current={index === step ? 'step' : undefined}><span className="phase-order">{String(index + 1).padStart(2, '0')}</span><span className="phase-name">{p.title}</span><small>{p.minutes}m</small></button>)}
       </nav>
-      <div className="simulation-scene">
+      <div className="simulation-scene" id="workshop-scene" role="region" aria-labelledby="simulation-scene-title">
+        <div className="scene-caption" aria-live={playing ? 'off' : 'polite'}><span>{String(step + 1).padStart(2, '0')} / 09</span><strong id="simulation-scene-title">{phase.title}</strong><small>{phase.minutes} min</small></div>
         <div className="view-controls" role="group" aria-label="Simulation viewpoint"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}>Follow a participant</button></div>
         <div className="room-stage"><div className="room-viewport"><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
           <title id="room-title">{`${phase.title}: an illustrative workshop room`}</title>

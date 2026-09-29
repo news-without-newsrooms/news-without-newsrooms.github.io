@@ -36,9 +36,9 @@
   box-sizing: border-box;
 }
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-top: var(--chapter-offset);
-  scroll-snap-type: y proximity;
+  scroll-snap-type: none;
 }
 body {
   margin: 0;
@@ -87,8 +87,7 @@ a:hover {
   margin-inline: auto;
 }
 .chapter {
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
+  scroll-margin-top: 0;
 }
 .skip {
   position: fixed;
@@ -361,6 +360,12 @@ h2 {
   grid-template-columns: repeat(3,minmax(0,1fr));
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);
+}
+.stage-tabs,.workshop-simulation {
+  overflow-anchor: none;
+}
+.stage-panel[inert] {
+  display: none!important;
 }
 .stage-tab {
   display: flex;
@@ -899,6 +904,9 @@ footer h2 {
 footer .footer-subtitle>span {
   display: block;
 }
+.footer-keyword {
+  color: var(--accent);
+}
 footer .eyebrow {
   color: #bcbdb4;
   font-size: 10px;
@@ -989,9 +997,6 @@ footer .eyebrow {
 @keyframes tour-countdown { from {stroke-dashoffset:94.25} to {stroke-dashoffset:0} }
 @media(min-width:1000px) and (min-height:650px) {
   .chapter { min-height: calc(100svh - var(--chapter-offset)); }
-  html.chapter-snapping:not(.chapter-is-moving) { scroll-snap-type: y mandatory; }
-  html.chapter-snapping .chapter { scroll-snap-stop: always; }
-  html.chapter-is-moving { scroll-snap-type: none; }
   footer.chapter { display: flex; align-items: center; }
 }
 @media(max-width:999px),(max-height:649px) {
@@ -1158,6 +1163,24 @@ footer .eyebrow {
   flex-direction: column;
   justify-content: center;
   background: #e7e4d8;
+}
+.scene-caption {
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 12px 18px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.scene-caption>span,.scene-caption small {
+  font: 10px/1.4 var(--mono);
+  color: var(--muted);
+}
+.scene-caption strong {
+  font-size: 13px;
+  line-height: 1.4;
 }
 .view-controls {
   display: flex;
@@ -1746,19 +1769,32 @@ footer .eyebrow {
   }
   .phase-list {
     display: grid;
-    grid-template-columns: repeat(3,minmax(0,1fr));
+    grid-template-columns: repeat(9,minmax(0,1fr));
+    position: sticky;
+    top: var(--chapter-offset);
+    z-index: 12;
     padding: 0;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
   .phase-list button {
-    min-height: 57px;
-    padding: 12px;
+    min-height: 48px;
+    padding: 8px 0;
     font-size: 11px;
-    border-bottom: 1px solid var(--line);
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid var(--line);
   }
-  .phase-list small {
+  .phase-list small,.phase-list .phase-name {
     display: none;
+  }
+  .phase-list button:last-child { border-right: 0; }
+  .phase-order { font-size: 11px; }
+  .stage-list {
+    position: sticky;
+    top: var(--chapter-offset);
+    z-index: 12;
+    background: var(--paper);
   }
   .simulation-toolbar {
     padding: 20px 23px;
@@ -2231,15 +2267,12 @@ footer .eyebrow {
     height: 17px;
   }
   .phase-list button {
-    min-height: 73px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-    padding: 10px;
-    font-size: 10px;
+    min-height: 46px;
+    padding: 8px 0;
+    gap: 0;
   }
   .phase-order {
-    font-size: 8px;
+    font-size: 11px;
   }
   .view-controls {
     padding: 9px;
@@ -2535,6 +2568,11 @@ footer .eyebrow {
 .preview-stages { display: flex; gap: 12px; margin-block: 14px; padding-block: 9px; border-block: 1px solid var(--line); font: 9px/1.4 var(--mono); }
 .room-hotspot[aria-expanded="true"] { background: #edda6244; border-color: #1d2518; }
 .room-hotspot[class*="object-worksheet"] { min-width: 24px; min-height: 24px; transition-duration: 1.6s; }
+.workshop-simulation:not(.is-playing) .room-person,
+.workshop-simulation:not(.is-playing) .room-camera,
+.workshop-simulation:not(.is-playing) .room-paper,
+.workshop-simulation:not(.is-playing) .room-hotspot { transition-duration: .55s; }
+.workshop-simulation:not(.is-playing) .room-layout { transition-duration: .2s; }
 @media(max-width:600px) {
   .room-object-shelf { padding: 15px 17px; }
   .room-object-shelf>p { font-size: 9px; gap: 9px; }

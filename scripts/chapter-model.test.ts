@@ -1,20 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { canTurnChapter, nextReadingStop, TOUR_DELAY } from '../app/chapter-model.ts';
+import { nextReadingStop, TOUR_DELAY } from '../app/chapter-model.ts';
 import { papersForPhase } from '../app/simulation-model.ts';
 import { roomObjectsForPhase } from '../app/room-objects.ts';
-
-test('one wheel gesture can turn a screen-sized chapter in either direction', () => {
-  assert.ok(canTurnChapter({ top: 88, bottom: 900 }, 1, 900, 88));
-  assert.ok(canTurnChapter({ top: 88, bottom: 900 }, -1, 900, 88));
-});
-
-test('long chapters allow reading until the appropriate boundary', () => {
-  assert.equal(canTurnChapter({ top: -200, bottom: 1400 }, 1, 900, 88), false);
-  assert.equal(canTurnChapter({ top: -200, bottom: 1400 }, -1, 900, 88), false);
-  assert.ok(canTurnChapter({ top: -800, bottom: 800 }, 1, 900, 88));
-  assert.ok(canTurnChapter({ top: 88, bottom: 1688 }, -1, 900, 88));
-});
 
 test('the three-second tour aligns short chapters and preserves long chapter content', () => {
   assert.equal(TOUR_DELAY, 3000);

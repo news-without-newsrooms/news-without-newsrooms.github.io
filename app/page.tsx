@@ -1,5 +1,7 @@
 'use client';
 
+import { useRef, useState } from 'react';
+import { revealSelection } from './page-scroll';
 import { Tabs } from '@base-ui/react/tabs';
 import { ArrowUpRight, ArrowRight, ChevronDown } from 'lucide-react';
 import ChapterNavigation from './chapter-navigation';
@@ -68,6 +70,9 @@ function StagePreview({ stage }: { stage: typeof stages[number] }) {
 }
 
 export default function Home() {
+  const [activeStage, setActiveStage] = useState('post');
+  const stageRoot = useRef<HTMLDivElement>(null);
+  const revealStage = () => revealSelection(() => stageRoot.current);
   return <>
     <a className="skip" href="#main">Skip to content</a>
     <div className="status-bar"><div className="wrap"><span className="status-dot" aria-hidden="true" /><strong>Proposed CHI 2027 workshop</strong><span className="status-detail">Acceptance pending · Submissions not open</span></div></div>
@@ -85,8 +90,8 @@ export default function Home() {
         <div className="hero-index"><p>JOURNALISM / HCI / AI / POLICY</p><p>PITTSBURGH, MAY 2027 <span>DATE TO BE CONFIRMED</span></p></div>
         <h1 id="page-title" aria-label="News Without Newsrooms"><span className="title-line">News Without</span><span className="title-line title-last">Newsrooms</span></h1>
         <div className="hero-band">
-          <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p>What can people see, verify, and do when a post looks like news?</p></div>
-          <div className="hero-copy"><p className="hero-subtitle">Belief, Spread, and Aftermath as Questions for Journalism and HCI</p><p className="hero-description">Examine news-like posts, their circulation, and what happens when later information arrives.</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
+          <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p>Belief, Spread, and Aftermath as Questions for Journalism and HCI</p></div>
+          <div className="hero-copy"><p className="hero-subtitle">What can people see, verify, and do when a post looks like news?</p><p className="hero-description">Examine news-like posts, their circulation, and what happens when later information arrives.</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
         </div>
       </section>
       <div className="facts wrap" aria-label="Workshop at a glance">
@@ -100,9 +105,9 @@ export default function Home() {
         <div className="section-heading"><div><p className="eyebrow">01 / INSIDE THE WORKSHOP</p><h2 id="workshop-title">When a post<br/>becomes the news.</h2></div><p className="section-intro">Work with people from journalism, HCI, AI, and policy. Start with a shared case, examine a decision, then test your ideas against someone else’s perspective.</p></div>
 
         <div className="activity-heading"><h3>Three stages of a claim</h3><p>Select a stage to explore your group’s activity.</p></div>
-        <Tabs.Root defaultValue="post" className="stage-tabs">
-          <Tabs.List className="stage-list" aria-label="Explore the workshop stages">
-            {stages.map(s => <Tabs.Tab className="stage-tab" value={s.id} key={s.id}><span className="stage-number">{s.n}</span><span><strong>{s.title.replace('The ', '')}</strong><small>{s.verb}</small></span><ArrowRight size={18} aria-hidden="true" /></Tabs.Tab>)}
+        <Tabs.Root ref={stageRoot} value={activeStage} onValueChange={value => { if (typeof value === 'string') { setActiveStage(value); revealStage(); } }} className="stage-tabs">
+          <Tabs.List activateOnFocus className="stage-list" aria-label="Explore the workshop stages">
+            {stages.map(s => <Tabs.Tab className="stage-tab" value={s.id} key={s.id} onClick={() => { if (activeStage === s.id) revealStage(); }}><span className="stage-number">{s.n}</span><span><strong>{s.title.replace('The ', '')}</strong><small>{s.verb}</small></span><ArrowRight size={18} aria-hidden="true" /></Tabs.Tab>)}
           </Tabs.List>
           {stages.map(s => <Tabs.Panel className="stage-panel" value={s.id} key={s.id} keepMounted>
             <div className="stage-content"><p className="eyebrow">THE QUESTION</p><h3>{s.question}</h3><p>{s.task}</p><dl><div><dt>On the table</dt><dd>{s.record}</dd></div><div><dt>You leave with</dt><dd>{s.output}</dd></div></dl></div>
@@ -138,6 +143,6 @@ export default function Home() {
       <section className="section wrap organizers chapter" id="organizers" aria-labelledby="organizers-title"><div className="section-heading"><div><p className="eyebrow">06 / ORGANIZERS</p><h2 id="organizers-title">Organizing team</h2></div><p className="section-intro">Our organizing team brings together news systems, public communication, policy, AI, and product development.</p></div><div className="people-grid">{organizers.map((o, i) => <article className="person" key={o.name}><span className="person-number">0{i + 1}</span><div><p className="person-role">{roles[i]}</p><h3>{o.name}</h3><p className="affiliation">{o.affiliation}</p><details><summary>About & contribution <ChevronDown size={15} aria-hidden="true" /></summary><p>{o.bio[0].toUpperCase() + o.bio.slice(1)}</p></details></div></article>)}</div></section>
 
     </main>
-    <footer id="contact" className="chapter"><div className="wrap"><div className="footer-top"><div><p className="eyebrow">News Without Newsrooms</p><h2 className="footer-subtitle"><span>Belief, Spread,</span>{' '}<span>and Aftermath</span>{' '}<span>as Questions for</span>{' '}<span>JOURNALISM and HCI</span></h2></div><div className="contact-block"><p>Write to the organizing team.</p><a className="contact-email" href={`mailto:${site.contactEmail}`}><span>{site.contactEmail}</span><Arrow external /></a><p className="contact-note">This address is for questions. Submissions will open only after acceptance and publication of the call.</p></div></div><div className="footer-bottom"><a className="footer-brand" href="#main">News Without Newsrooms</a><p>Participant guide prototype · Proposed for CHI 2027</p><a href="https://chi2027.acm.org/authors/workshops/" target="_blank" rel="noreferrer">CHI workshop information <Arrow external /></a></div></div></footer>
+    <footer id="contact" className="chapter"><div className="wrap"><div className="footer-top"><div><p className="eyebrow">News Without Newsrooms</p><h2 className="footer-subtitle"><span><span className="footer-keyword">Belief</span>, <span className="footer-keyword">Spread</span>,</span>{' '}<span>and <span className="footer-keyword">Aftermath</span></span>{' '}<span>as Questions for</span>{' '}<span><span className="footer-keyword">JOURNALISM</span> and <span className="footer-keyword">HCI</span></span></h2></div><div className="contact-block"><p>Write to the organizing team.</p><a className="contact-email" href={`mailto:${site.contactEmail}`}><span>{site.contactEmail}</span><Arrow external /></a><p className="contact-note">This address is for questions. Submissions will open only after acceptance and publication of the call.</p></div></div><div className="footer-bottom"><a className="footer-brand" href="#main">News Without Newsrooms</a><p>Participant guide prototype · Proposed for CHI 2027</p><a href="https://chi2027.acm.org/authors/workshops/" target="_blank" rel="noreferrer">CHI workshop information <Arrow external /></a></div></div></footer>
   </>;
 }

@@ -1,142 +1,119 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
-import { chapters, TOUR_DELAY, canTurnChapter, nextReadingStop } from './chapter-model';
+import { chapters, TOUR_DELAY, nextReadingStop } from './chapter-model';
+import { createNavigationController } from './navigation-controller';
+import { connectPageScroll, headerOffset } from './page-scroll';
 export { chapters } from './chapter-model';
 
 export default function ChapterNavigation() {
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [waiting, setWaiting] = useState(false);
   const [available, setAvailable] = useState(false);
   const [cycle, setCycle] = useState(0);
-  const controller = useRef({ go: (_index: number) => {}, toggle: () => {} });
+  const actions = useRef({ go: (_index: number) => {}, toggle: () => {} });
 
   useEffect(() => {
     const desktop = matchMedia('(min-width: 1000px) and (min-height: 650px) and (pointer: fine)');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-    // The footer is a scroll destination, but not an entry in the chapter rail.
     const sections = [...chapters.map(([id]) => document.getElementById(id)!), document.getElementById('contact')!];
     const html = document.documentElement;
-    let current = 0, auto = false, animating = false, disposed = false;
-    let timer = 0, settleTimer = 0, frame = 0, fallback = 0, wheelSum = 0, lastWheel = 0, gestureUntil = 0;
-    const header = () => (document.querySelector('.site-header')?.getBoundingClientRect().height ?? 76) + 12;
+    let frame = 0, auto = false;
     const maxScroll = () => Math.max(0, html.scrollHeight - innerHeight);
-    const target = (index: number) => index === 0 ? 0 : Math.min(maxScroll(), Math.max(0, sections[index].getBoundingClientRect().top + scrollY - header()));
-    const enabled = () => desktop.matches && !reduce.matches;
-    const update = () => {
-      frame = 0;
-      const line = header() + 12;
-      current = 0;
-      sections.forEach((section, index) => { if (section.getBoundingClientRect().top <= line) current = index; });
-      if (scrollY >= maxScroll() - 4) current = sections.length - 1;
-      setActive(current);
+    const currentIndex = () => {
+      if (scrollY >= maxScroll() - 4) return sections.length - 1;
+      let index = 0;
+      sections.forEach((section, i) => { if (section.getBoundingClientRect().top <= headerOffset() + 12) index = i; });
+      return index;
     };
-    const pause = () => { auto = false; clearTimeout(timer); setPlaying(false); };
-    const schedule = () => {
-      clearTimeout(timer);
-      if (!auto || animating || !enabled() || document.hidden) return;
-      if (scrollY >= maxScroll() - 4) { pause(); return; }
-      setCycle(value => value + 1);
-      timer = window.setTimeout(() => {
-        const next = current + 1;
-        const top = next < sections.length
-          ? nextReadingStop(scrollY, sections[next].getBoundingClientRect().top + scrollY, innerHeight, header(), maxScroll())
-          : maxScroll();
-        move(top);
-      }, TOUR_DELAY);
+    const update = () => { frame = 0; setActive(currentIndex()); };
+    const observeScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const eligible = () => desktop.matches && !reduce.matches && !document.hidden;
+    const controller = createNavigationController({
+      now: () => performance.now(),
+      frame: callback => requestAnimationFrame(callback),
+      cancelFrame: id => cancelAnimationFrame(id),
+      delay: (callback, ms) => window.setTimeout(callback, ms),
+      cancelDelay: id => clearTimeout(id),
+      readY: () => scrollY,
+      // Never start a second native smooth-scroll animation beneath the controller.
+      writeY: top => window.scrollTo({ top, behavior: 'instant' }),
+      maxY: maxScroll,
+      reducedMotion: () => reduce.matches,
+      canTour: eligible,
+      nextTourTarget: () => {
+        if (scrollY >= maxScroll() - 4) return null;
+        const next = sections[currentIndex() + 1];
+        const nextTop = next ? next.getBoundingClientRect().top + scrollY : maxScroll() + headerOffset();
+        return nextReadingStop(scrollY, nextTop, innerHeight, headerOffset(), maxScroll());
+      },
+      onState: state => {
+        auto = state.playing;
+        setPlaying(state.playing); setWaiting(state.waiting);
+        if (state.waiting) setCycle(value => value + 1);
+      },
+      tourDelay: TOUR_DELAY,
+    });
+    const disconnect = connectPageScroll(destination => controller.navigate(destination));
+    const goTo = (element: HTMLElement) => {
+      controller.navigate(() => element.id === 'main' || element.id === 'overview'
+        ? 0 : element.getBoundingClientRect().top + scrollY - headerOffset());
+      history.replaceState(null, '', location.pathname + location.search + (element.id === 'main' || element.id === 'overview' ? '' : '#' + element.id));
     };
-    const finish = () => {
-      clearTimeout(fallback); clearTimeout(settleTimer);
-      if (!animating || disposed) return;
-      animating = false;
-      html.classList.remove('chapter-is-moving');
-      update(); schedule();
+    actions.current = {
+      go: index => { if (sections[index]) goTo(sections[index]); },
+      toggle: () => { if (auto) controller.pause(); else controller.play(); },
     };
-    const move = (top: number) => {
-      clearTimeout(timer); clearTimeout(fallback); clearTimeout(settleTimer);
-      animating = true;
-      html.classList.add('chapter-is-moving');
-      window.scrollTo({ top, behavior: reduce.matches ? 'instant' : 'smooth' });
-      // Scroll events debounce completion; the fallback also covers no-op moves.
-      fallback = window.setTimeout(finish, 1600);
+    const manualInput = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest('.chapter-auto') && event.type !== 'wheel' && event.type !== 'touchstart') return;
+      controller.pause();
     };
-    const go = (index: number) => {
-      if (!sections[index]) return;
-      pause(); move(target(index));
-      history.replaceState(null, '', location.pathname + location.search + (index ? '#' + sections[index].id : ''));
-    };
-    const nestedScroll = (node: Element | null, delta: number) => {
-      for (let item = node; item && item !== document.body; item = item.parentElement) {
-        if (/(auto|scroll)/.test(getComputedStyle(item).overflowY) && item.scrollHeight > item.clientHeight + 2 &&
-          (delta > 0 ? item.scrollTop + item.clientHeight < item.scrollHeight - 2 : item.scrollTop > 2)) return true;
-      }
-      return false;
-    };
-    const wheel = (event: WheelEvent) => {
-      pause();
-      if (!enabled() || event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY) ||
-        nestedScroll(event.target instanceof Element ? event.target : null, event.deltaY)) return;
-      const now = performance.now();
-      if (animating || now < gestureUntil) { event.preventDefault(); gestureUntil = now + 160; return; }
-      const direction = Math.sign(event.deltaY), next = current + direction;
-      if (!direction || !sections[next] || !canTurnChapter(sections[current].getBoundingClientRect(), direction, innerHeight, header())) return;
-      event.preventDefault();
-      if (now - lastWheel > 180 || Math.sign(wheelSum) !== direction) wheelSum = 0;
-      lastWheel = now;
-      wheelSum += event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1);
-      if (Math.abs(wheelSum) >= 34) { wheelSum = 0; gestureUntil = now + 800; go(next); }
-    };
-    const interact = (event: Event) => {
-      if (event.target instanceof Element && event.target.closest('.chapter-auto')) return;
-      pause();
-    };
-    const scroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-      if (animating) { clearTimeout(settleTimer); settleTimer = window.setTimeout(finish, 140); }
+    const click = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href^="#"]') : null;
+      if (!link || link.classList.contains('skip')) return;
+      const id = link.getAttribute('href')?.slice(1);
+      const target = id ? document.getElementById(id) : null;
+      if (!target) return;
+      event.preventDefault(); goTo(target);
     };
     const resize = () => {
-      html.style.setProperty('--chapter-offset', header() + 'px');
-      html.classList.toggle('chapter-snapping', enabled());
-      setAvailable(enabled());
-      if (!enabled()) pause();
-      update(); schedule();
+      const offset = headerOffset() + 'px';
+      if (html.style.getPropertyValue('--chapter-offset') !== offset) html.style.setProperty('--chapter-offset', offset);
+      setAvailable(desktop.matches && !reduce.matches);
+      // Mobile address-bar resizing must not cancel a user's selected destination.
+      if (auto && !eligible()) controller.pause();
+      observeScroll();
     };
-    const visibility = () => { if (document.hidden) pause(); };
+    const visibility = () => { if (document.hidden) controller.pause(); };
+    const preference = () => { controller.pause(); resize(); };
     const hash = () => {
-      const index = sections.findIndex(section => '#' + section.id === location.hash);
-      if (index >= 0) go(index);
+      const target = document.getElementById(location.hash.slice(1));
+      if (target) controller.navigate(() => target.getBoundingClientRect().top + scrollY - headerOffset());
     };
-    controller.current = {
-      go,
-      toggle: () => {
-        if (auto) { pause(); return; }
-        if (!enabled()) return;
-        auto = true; setPlaying(true);
-        if (scrollY >= maxScroll() - 4) move(0); else schedule();
-      },
-    };
-    window.addEventListener('wheel', wheel, { passive: false });
-    window.addEventListener('scroll', scroll, { passive: true });
+    // Passive input listeners cancel our work without consuming native wheel/touch input.
+    const inputs = ['wheel', 'pointerdown', 'touchstart', 'keydown', 'focusin'];
+    // Cancel before React handles the same input and requests a new destination.
+    inputs.forEach(type => document.addEventListener(type, manualInput, { passive: true, capture: true }));
+    document.addEventListener('click', click);
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('scroll', observeScroll, { passive: true });
     window.addEventListener('resize', resize);
     window.addEventListener('hashchange', hash);
-    for (const type of ['pointerdown', 'touchstart', 'keydown', 'focusin']) document.addEventListener(type, interact, { passive: true });
-    document.addEventListener('visibilitychange', visibility);
-    desktop.addEventListener('change', resize);
-    reduce.addEventListener('change', resize);
-    resize();
-    // First visit starts the brief tour. Any reading interaction leaves it paused.
-    auto = enabled() && !location.hash && scrollY < 8;
-    setPlaying(auto);
-    document.fonts.ready.then(() => { if (!disposed) { update(); schedule(); } });
+    desktop.addEventListener('change', preference); reduce.addEventListener('change', preference);
+    const header = document.querySelector('.site-header');
+    const observer = new ResizeObserver(resize);
+    if (header) observer.observe(header);
+    resize(); update();
+    // Tour playback is explicit. Page loading, scrolling, and resizing never start it.
     return () => {
-      disposed = true;
-      clearTimeout(timer); clearTimeout(fallback); clearTimeout(settleTimer); cancelAnimationFrame(frame);
-      window.removeEventListener('wheel', wheel); window.removeEventListener('scroll', scroll);
-      window.removeEventListener('resize', resize); window.removeEventListener('hashchange', hash);
-      for (const type of ['pointerdown', 'touchstart', 'keydown', 'focusin']) document.removeEventListener(type, interact);
-      document.removeEventListener('visibilitychange', visibility);
-      desktop.removeEventListener('change', resize); reduce.removeEventListener('change', resize);
-      html.classList.remove('chapter-snapping', 'chapter-is-moving');
+      controller.dispose(); disconnect(); observer.disconnect(); cancelAnimationFrame(frame);
+      inputs.forEach(type => document.removeEventListener(type, manualInput, true));
+      document.removeEventListener('click', click); document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('scroll', observeScroll); window.removeEventListener('resize', resize);
+      window.removeEventListener('hashchange', hash);
+      desktop.removeEventListener('change', preference); reduce.removeEventListener('change', preference);
     };
   }, []);
 
@@ -144,11 +121,11 @@ export default function ChapterNavigation() {
     <span className="chapter-position" aria-hidden="true">{String(active + 1).padStart(2, '0')}</span>
     <div className="chapter-dots">{chapters.map(([id, name], index) => <a key={id} href={'#' + id} aria-label={name} aria-current={index === active ? 'location' : undefined} onClick={event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault(); controller.current.go(index);
+      event.preventDefault(); actions.current.go(index);
     }}><span className="chapter-dot" aria-hidden="true"/><span className="chapter-tooltip" aria-hidden="true">{name}</span></a>)}</div>
-    <button className="chapter-auto" type="button" hidden={!available} aria-label={playing ? 'Pause automatic tour' : 'Play automatic tour, advancing every 3 seconds'} aria-pressed={playing} onClick={() => controller.current.toggle()}>
+    <button className="chapter-auto" type="button" hidden={!available} aria-label={playing ? 'Pause automatic tour' : 'Play automatic tour, advancing every 3 seconds'} aria-pressed={playing} onClick={() => actions.current.toggle()}>
       {playing ? <Pause size={13} aria-hidden="true"/> : <Play size={13} aria-hidden="true"/>}
-      {playing && <svg key={cycle} className="tour-progress" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15"/></svg>}
+      {playing && waiting && <svg key={cycle} className="tour-progress" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15"/></svg>}
       <span className="chapter-tooltip" aria-hidden="true">{playing ? 'Pause tour · 3s' : 'Play tour · 3s'}</span>
     </button>
   </nav>;
