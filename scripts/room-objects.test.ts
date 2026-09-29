@@ -7,7 +7,7 @@ import { roomObjectsForPhase, projectRoomObject, roomObjectContent, worksheetPro
 test('only materials, board and visible table documents become interactive', () => {
   for (const phase of phases) {
     const objects=roomObjectsForPhase(phase.id);
-    assert.equal(objects.length,['groups','casework','exchange','assembly','closing'].includes(phase.id)?5:2);
+    assert.equal(objects.length,5);
     assert.equal(new Set(objects.map(o=>o.id)).size,objects.length);
     assert.ok(objects.every(o=>o.label.startsWith('Open ')));
     assert.ok(objects.every(o=>o.width>0&&o.height>0));

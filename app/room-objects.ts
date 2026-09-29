@@ -11,7 +11,7 @@ export function roomObjectsForPhase(phase: PhaseId): RoomObject[] {
     { id: 'materials', title: 'Case pack', label: 'Open the case pack on the desk', x: 140, y: 90, width: 64, height: 42 },
     { id: 'board', title: 'Shared board', label: 'Open the shared workshop board', x: 401, y: 84, width: 256, height: 60 },
   ];
-  if (['groups', 'casework', 'exchange', 'assembly', 'closing'].includes(phase)) {
+  { // Worksheets stay on the tables throughout the visit.
     const papers = papersForPhase(phase);
     papers.forEach((paper, stage) => {
       const destination = phase === 'exchange' ? (stage + 1) % 3 : stage;

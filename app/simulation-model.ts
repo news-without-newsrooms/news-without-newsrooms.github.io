@@ -70,20 +70,22 @@ export function peopleForPhase(id: PhaseId, count: number, interest = 0) {
     // Swap the visitor with another participant so group sizes and organizer distribution stay constant.
     const layoutIndex = index === 6 ? 6 + interest : index === 6 + interest ? 6 : index;
     let position: Point;
-    if (['groups', 'casework', 'exchange'].includes(id)) position = groupPosition(layoutIndex, count);
+    if (['groups', 'casework', 'exchange', 'closing'].includes(id)) position = groupPosition(layoutIndex, count);
     else if (id === 'break') {
-      const group = index % 3;
-      const seat = Math.floor(index / 3);
-      position = index === 6 ? { x: 635, y: 166 } : index === 7 ? { x: 680, y: 183 } : { x: [144, 388, 632][group] + (seat % 3 - 1) * 33, y: 295 + Math.floor(seat / 3) * 44 };
+      // The featured participant joins a conversation beside the coffee counter.
+      const place = index === 6 ? 2 : index === 2 ? 6 : index;
+      const group = place % 3;
+      const seat = Math.floor(place / 3);
+      position = { x: [151, 397, 634][group] + (seat % 3 - 1) * 30, y: 165 + Math.floor(seat / 3) * 33 };
     } else if (id === 'panel') {
-      position = index < 3 ? { x: 333 + index * 66, y: 165 } : audiencePosition(index - 3);
+      position = index < 3 ? { x: 333 + index * 66, y: 165 } : groupPosition((index + 1) % count, count);
     } else if (id === 'assembly') {
       const reporters = [0, 1, 2].map(group => group === interest ? 6 : group);
       const reporter = reporters.indexOf(index);
       position = reporter >= 0 ? { x: 326 + reporter * 72, y: 180 } : groupPosition(layoutIndex, count);
     } else if (id === 'lightning') {
-      position = index === 6 ? { x: 584, y: 164 } : audiencePosition(index < 6 ? index : index - 1);
-    } else position = index === 0 ? { x: 584, y: 164 } : audiencePosition(index - 1);
+      position = index === 6 ? { x: 584, y: 164 } : groupPosition((index + 1) % count, count);
+    } else position = index === 0 ? { x: 584, y: 164 } : groupPosition((index + 1) % count, count);
     return { ...position, id: index, organizer: index < 6, group: layoutIndex % 3, visitor: index === 6 };
   });
 }
