@@ -24,6 +24,10 @@ npm run preview
 
 The build checks TypeScript, bundles the interactive components, and prerenders the complete page into `dist/index.html`. GitHub Pages serves only `dist/`.
 
+## Interface
+
+The guide follows the participant journey: purpose, stage activities, group exchange, program, participation, preparation, and practical details. Stage tabs use Base UI keyboard navigation. Biographies, the source figure, and FAQs use native disclosure controls. The interface uses system fonts, local assets, visible focus states, and reduced-motion support. The worksheet remains printable.
+
 ## Update
 
 - Website URL and shared contact address: `site.config.json`
