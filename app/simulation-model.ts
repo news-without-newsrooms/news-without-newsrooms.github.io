@@ -80,7 +80,7 @@ export function peopleForPhase(id: PhaseId, count: number, interest = 0) {
 
 export function papersForPhase(id: PhaseId) {
   return tables.map((_, index) => {
-    if (id === 'assembly' || id === 'closing') return { id: index, x: 344 + index * 55, y: 138 };
+    if (id === 'assembly' || id === 'closing') return { id: index, x: 320 + index * 80, y: 138 };
     const recipient = id === 'exchange' ? (index + 1) % 3 : index;
     return { id: index, x: tables[recipient].x, y: tables[recipient].y - 11 };
   });

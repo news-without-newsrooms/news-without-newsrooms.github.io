@@ -8,14 +8,14 @@ export type RoomCamera = { x: number; y: number; scale: number };
 /** Only these objects are interactive; scenery and participants remain decorative. */
 export function roomObjectsForPhase(phase: PhaseId): RoomObject[] {
   const objects: RoomObject[] = [
-    { id: 'materials', title: 'Case materials', label: 'Open the case materials on the desk', x: 156, y: 99, width: 107, height: 43 },
-    { id: 'board', title: 'Shared board', label: 'Open the shared workshop board', x: 401, y: 90, width: 266, height: 77 },
+    { id: 'materials', title: 'Case pack', label: 'Open the case pack on the desk', x: 140, y: 90, width: 64, height: 42 },
+    { id: 'board', title: 'Shared board', label: 'Open the shared workshop board', x: 401, y: 84, width: 256, height: 60 },
   ];
-  if (['groups', 'casework', 'exchange'].includes(phase)) {
+  if (['groups', 'casework', 'exchange', 'assembly', 'closing'].includes(phase)) {
     const papers = papersForPhase(phase);
     papers.forEach((paper, stage) => {
       const destination = phase === 'exchange' ? (stage + 1) % 3 : stage;
-      objects.push({ id: `worksheet-${stage}` as RoomObjectId, title: `${interests[stage].table} worksheet`, label: `Open ${interests[stage].table.toLowerCase()} worksheet${phase === 'exchange' ? `, now at ${interests[destination].table.toLowerCase()} table` : ''}`, x: paper.x, y: paper.y, width: 46, height: 48, stage });
+      objects.push({ id: `worksheet-${stage}` as RoomObjectId, title: `${interests[stage].table} worksheet`, label: `Open ${interests[stage].table.toLowerCase()} worksheet${phase === 'exchange' ? `, now at ${interests[destination].table.toLowerCase()} table` : ''}`, x: paper.x, y: paper.y, width: 34, height: 38, stage });
     });
   }
   return objects;

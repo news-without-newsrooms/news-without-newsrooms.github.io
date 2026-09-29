@@ -1,41 +1,61 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { ArrowRight, ArrowUpRight, X } from 'lucide-react';
-import { interests } from './simulation-model';
+import { X } from 'lucide-react';
 import type { PhaseId } from './simulation-model';
-import { roomObjectContent, worksheetPrompts } from './room-objects';
+import { roomObjectContent } from './room-objects';
 import type { RoomObjectId } from './room-objects';
 
-export default function RoomInspector({ object, phase, interest, onClose, onCasework }: {
-  object: RoomObjectId | null; phase: PhaseId; interest: number; onClose: () => void; onCasework: () => void;
+export default function RoomInspector({ object, phase, interest, onClose }: {
+  object: RoomObjectId | null; phase: PhaseId; interest: number; onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const open = object !== null;
   useEffect(() => {
     const node = dialog.current;
-    if (!node) return;
-    if (object && !node.open) node.showModal();
-    if (!object && node.open) node.close();
-  }, [object]);
+    if (!node || !open) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    // Non-modal: keep the room visible and other objects available.
+    node.show();
+    const dismiss = (event: PointerEvent) => {
+      if (!(event.target instanceof Element) || node.contains(event.target)) return;
+      if (event.target.closest('.room-hotspot, .room-object-shelf button')) return;
+      onClose();
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); onClose(); }
+    };
+    document.addEventListener('pointerdown', dismiss);
+    document.addEventListener('keydown', escape);
+    return () => {
+      const returnFocus = node.contains(document.activeElement);
+      document.removeEventListener('pointerdown', dismiss);
+      document.removeEventListener('keydown', escape);
+      node.close();
+      if (returnFocus && opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, [open, onClose]);
   const content = object ? roomObjectContent(object, phase, interest) : null;
-  const isSheet = object?.startsWith('worksheet-');
-  const title = object === 'materials' ? 'Inside the case pack' : object === 'board' ? 'The shared board' : `${content?.interest.table} worksheet`;
-  return <dialog className="room-inspector" ref={dialog} aria-labelledby={content ? "inspector-title" : undefined} aria-describedby={content ? "inspector-context" : undefined} onCancel={onClose} onClose={onClose} onClick={event => {
-    if (event.target !== event.currentTarget) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) onClose();
-  }}>
+  return <dialog id="room-preview" className="room-preview" ref={dialog} aria-labelledby={open ? 'preview-title' : undefined} aria-describedby={open ? 'preview-note' : undefined}>
     {content && <>
-      <header className="inspector-header"><span className="inspector-index">{isSheet ? 'WORKING DOCUMENT' : object === 'board' ? 'ON THE WALL' : 'AT THE MATERIALS DESK'}</span><button type="button" onClick={onClose} autoFocus aria-label="Close document"><X size={19} aria-hidden="true"/></button></header>
-      <div className="inspector-document">
-        <p className="inspector-phase">{content.phase.title} / {content.phase.session}</p>
-        <h2 id="inspector-title">{title}</h2>
-        <p id="inspector-context" className="inspector-context">{isSheet ? `A preview for ${content.interest.title.toLowerCase()}. ${phase === 'exchange' ? `This worksheet has moved to ${content.destination.toLowerCase()} table.` : 'Use the same seven prompts across all three stage groups.'}` : object === 'board' ? 'A preview of what we will assemble together. These are working prompts, not findings from the workshop.' : 'The planned case pack gives everyone a shared starting point. It will be distributed two weeks before the workshop.'}</p>
-        {object === 'materials' && <div className="pack-inventory"><h3>What you will receive</h3><ol><li><span>01</span><div><h4>An anchor sequence</h4><p>Documented records from a Korean accusation-video case, with checked English translations of Korean material.</p></div></li><li><span>02</span><div><h4>Comparison records</h4><p>Korean and Japanese cases with different later outcomes. An outcome does not establish that earlier viewers saw it.</p></div></li><li><span>03</span><div><h4>A common worksheet</h4><p>Seven prompts to connect a record, interface cues, a user decision, and a research question.</p></div></li></ol></div>}
-        {object !== 'board' && <section className="practice-record" aria-labelledby="record-preview-title"><div className="record-caption"><span>ILLUSTRATIVE PRACTICE EXCERPT</span><span>{content.interest.table}</span></div><h3 id="record-preview-title">{content.record.excerpt}</h3><p>{content.record.context}</p><details className="record-reveal" key={`${object}-${content.stage}`}><summary>Look closer: what can this record establish?<span aria-hidden="true">+</span></summary><dl><div><dt>Visible in this example</dt><dd>{content.record.visible}</dd></div><div><dt>Still unknown</dt><dd>{content.record.unknown}</dd></div></dl></details><p className="record-question">{content.record.question}</p><p className="record-disclaimer">Fictional example for this preview. The workshop will use documented case records.</p></section>}
-        {isSheet && <section className="inspector-prompts"><h3>The seven worksheet prompts</h3><p>Open a prompt to see what your group will work through.</p>{worksheetPrompts.map(([heading, description], index) => <details key={heading}><summary><span>{String(index + 1).padStart(2,'0')}</span>{heading}<span aria-hidden="true">+</span></summary><p>{description}</p></details>)}<div className="transfer-preview"><span className="inspector-index">WHEN WORKSHEETS MOVE</span><p>{content.interest.exchange}</p><p>What conditions must hold, what could fail, and how would you evaluate the idea?</p></div></section>}
-        {object === 'board' && <><div className="board-question"><span>THE QUESTION IN THE ROOM</span><p>What can people see, verify, and do at this point?</p></div><ol className="board-sequence">{interests.map((item,index) => <li key={item.id} className={index === interest ? 'is-your-stage' : ''}><span className="board-step">0{index + 1}</span><div><h3>{item.table}{index === interest && <small>Your starting group</small>}</h3><p>{item.question}</p><details><summary>What we put on the board <span aria-hidden="true">+</span></summary><p>{item.focus} Keep observations, unknowns, and disagreements distinct.</p></details></div></li>)}</ol><div className="board-output"><span className="inspector-index">AFTER THIS ACTIVITY</span><p>{content.phase.output}</p></div></>}
+      <header><span>TENTATIVE MATERIAL</span><button type="button" onClick={onClose} autoFocus aria-label="Close material preview"><X size={18} aria-hidden="true" /></button></header>
+      <div className="preview-body" key={object}>
+        <h3 id="preview-title">{object === 'materials' ? 'Inside the case pack' : object === 'board' ? 'On the shared board' : `${content.interest.table} worksheet`}</h3>
+        {object === 'materials' ? <>
+          <p>A documented Korean accusation-video sequence, followed through its posts, circulation, and later information.</p>
+          <ul><li>Source records with checked English translations</li><li>Korean and Japanese comparison records</li><li>A shared worksheet for your group</li></ul>
+          <p id="preview-note" className="preview-note">Planned for two weeks before the workshop. The pack is still being prepared.</p>
+        </> : object === 'board' ? <>
+          <p className="preview-question">What can people see, verify, and do?</p>
+          <div className="preview-stages"><span>01 Post</span><span>02 Spread</span><span>03 Aftermath</span></div>
+          <p>Each group adds one observation, one unknown, and one research question.</p>
+          <p id="preview-note" className="preview-note">A sample board structure, not workshop findings.</p>
+        </> : <>
+          <p className="preview-caption">ILLUSTRATIVE EXAMPLE</p>
+          <blockquote>{content.record.excerpt}</blockquote>
+          <p className="preview-prompt"><strong>Your group’s prompt</strong>{content.record.question}</p>
+          <p id="preview-note" className="preview-note">Fictional excerpt. The final worksheet will use documented records.{phase === 'exchange' ? ` Now at ${content.destination.toLowerCase()} table.` : ''}</p>
+        </>}
       </div>
-      <div className="inspector-actions">{object === 'board' ? <button type="button" onClick={onClose}>Back to the room <ArrowRight size={17} aria-hidden="true"/></button> : <><a href={`${import.meta.env.BASE_URL}worksheet.html`} target="_blank" rel="noreferrer">Printable worksheet <ArrowUpRight size={16} aria-hidden="true"/></a><button type="button" onClick={onCasework}>Try the group-work step <ArrowRight size={16} aria-hidden="true"/></button></>}</div>
     </>}
   </dialog>;
 }

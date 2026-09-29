@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Play, Pause, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { phases, tables, peopleForPhase, papersForPhase, audiencePosition, interests, yourActivity, cameraForVisitor, thoughtBubbles } from './simulation-model';
 
@@ -29,6 +29,7 @@ export default function WorkshopSimulation() {
   const visitor = people.find(person => person.visitor)!;
   const camera = cameraForVisitor(visitor, following);
   const roomObjects = roomObjectsForPhase(phase.id);
+  const closePreview = useCallback(() => setInspecting(null), []);
   const inspect = (id: RoomObjectId) => { setPlaying(false); setInspecting(id); };
   useEffect(() => {
     if (reducedMotion) { setMoving(false); return; }
@@ -59,7 +60,7 @@ export default function WorkshopSimulation() {
     return () => window.clearTimeout(timer);
   }, [playing, reducedMotion, inView, step, inspecting]);
 
-  const chooseStep = (index: number) => { setPlaying(false); setStep(index); };
+  const chooseStep = (index: number) => { setPlaying(false); setInspecting(null); setStep(index); };
   const play = () => { if (step === phases.length - 1) setStep(0); setPlaying(v => !v); };
 
   return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${moving ? 'is-moving' : ''}`} ref={root}>
@@ -71,7 +72,7 @@ export default function WorkshopSimulation() {
       </nav>
       <div className="simulation-scene">
         <div className="view-controls" role="group" aria-label="Simulation viewpoint"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}>Follow a participant</button></div>
-        <div className="room-viewport"><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
+        <div className="room-stage"><div className="room-viewport"><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
           <title id="room-title">{`${phase.title}: an illustrative workshop room`}</title>
           <desc id="room-description">{count} people including six organizers. {phase.action} Pixel characters represent participants. Your chosen interest is {chosen.title}. People and furniture show a possible arrangement, not a confirmed room plan.</desc>
           <defs>
@@ -151,17 +152,17 @@ export default function WorkshopSimulation() {
         <div className="room-hotspots" aria-label="Objects you can explore">{roomObjects.map(object => {
           const position = projectRoomObject(object, camera);
           if (!position.visible) return null;
-          return <button key={object.id} type="button" className={`room-hotspot object-${object.id}`} disabled={moving} aria-label={object.label} aria-haspopup="dialog" aria-describedby="room-object-hint" onClick={() => inspect(object.id)} style={{left:`${position.left}%`,top:`${position.top}%`,width:`max(44px, ${position.width}%)`,height:`max(44px, ${position.height}%)`}}><span className="object-plus" aria-hidden="true">+</span><span className="object-tooltip" aria-hidden="true">{object.title}</span></button>;
+          return <button key={object.id} type="button" className={`room-hotspot object-${object.id}`} aria-expanded={inspecting === object.id} aria-controls="room-preview" aria-label={object.label} aria-haspopup="dialog" aria-describedby="room-object-hint" onClick={() => inspect(object.id)} style={{left:`${position.left}%`,top:`${position.top}%`,width:`max(${object.stage === undefined ? 44 : 24}px, ${position.width}%)`,height:`max(${object.stage === undefined ? 44 : 24}px, ${position.height}%)`}}><span className="object-plus" aria-hidden="true">+</span><span className="object-tooltip" aria-hidden="true">{object.title}</span></button>;
         })}</div>
         {following && <button className="room-minimap" type="button" onClick={() => setFollowing(false)} aria-label="Return to the whole-room view"><span>YOU IN THE ROOM</span><svg viewBox="0 0 800 520" aria-hidden="true"><rect x="45" y="33" width="710" height="425" fill="#f4f3e7" stroke="#91a18b" strokeWidth="9"/><rect x="272" y="56" width="258" height="70" fill="#b7c9ab"/>{grouped && tables.map(t => <ellipse key={t.label} cx={t.x} cy={t.y} rx="55" ry="45" fill="#d5c5a7"/>)}{people.map(person => <circle key={person.id} cx={person.x} cy={person.y} r={person.visitor ? 22 : 10} fill={person.visitor ? '#315e66' : '#8f9e80'} stroke={person.visitor ? '#fffef5' : 'none'} strokeWidth="8"/>)}</svg><span>Whole room ↗</span></button>}
         </div>
+        <RoomInspector object={inspecting} phase={phase.id} interest={interest} onClose={closePreview}/></div>
         <div className="room-legend"><span className="your-table"><i/>Your interest: {chosen.title}</span><span>{grouped ? `Your starting table: ${chosen.table}` : 'Follow the character marked “you”'}</span></div>
       </div>
     </div>
-    <div className="room-object-shelf"><p id="room-object-hint"><span className="double-line-key" aria-hidden="true">+</span>Double outline + means you can open it.</p><div aria-label="Room documents">{roomObjects.map(object => <button key={object.id} type="button" onClick={() => inspect(object.id)} aria-haspopup="dialog">{object.title}<span aria-hidden="true">↗</span></button>)}</div></div>
+    <div className="room-object-shelf"><p id="room-object-hint"><span className="double-line-key" aria-hidden="true">+</span>Click a paper or a double outline + to preview the material.</p><div aria-label="Room documents">{roomObjects.map(object => <button key={object.id} type="button" onClick={() => inspect(object.id)} aria-haspopup="dialog" aria-expanded={inspecting === object.id} aria-controls="room-preview">{object.title}<span aria-hidden="true">+</span></button>)}</div></div>
     <div className="simulation-detail" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><div><p className="simulation-session">{phase.session} · {phase.minutes} minutes</p><h3>{phase.title}</h3><p>{phase.action}</p></div><div className="simulation-output"><span>YOUR PART IN THIS MOMENT</span><p>{yourActivity(phase.id, interest)}</p><details className="phase-output"><summary>What the group produces</summary><p>{phase.output}</p></details></div></div>
     <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : 'Play walkthrough'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : 'Play walkthrough'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : 'A brief preview of each activity, at your pace.'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
     <p id="simulation-assumptions" className="simulation-assumptions">An illustrative visit with 20 pixel characters, including six organizers. Dialogue and the featured participant’s role are examples. The planned attendance is 15–25. Your interest suggests a starting group; organizers will balance the actual groups. Room, seating, and panel are not confirmed. During the exchange, worksheets move between groups.</p>
-    <RoomInspector object={inspecting} phase={phase.id} interest={interest} onClose={() => setInspecting(null)} onCasework={() => { setInspecting(null); chooseStep(5); setFollowing(true); requestAnimationFrame(() => root.current?.querySelector<HTMLButtonElement>('.phase-list [aria-current=step]')?.focus({preventScroll:true})); }}/>
   </div>;
 }
