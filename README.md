@@ -4,7 +4,7 @@ Participant guide prototype for a proposed CHI 2027 workshop on belief, spread, 
 
 **Acceptance is pending. Submissions are not open.** Program and participation details are provisional.
 
-[Open the participant guide](https://dongjae-kang.github.io/news-without-newsrooms/)
+[Open the participant guide](https://news-without-newsrooms.github.io/)
 
 ## Develop
 
@@ -15,7 +15,7 @@ npm ci
 npm run dev
 ```
 
-Open the local URL with `/news-without-newsrooms/` appended.
+Open the local URL printed by Vite.
 
 ```sh
 npm run build
