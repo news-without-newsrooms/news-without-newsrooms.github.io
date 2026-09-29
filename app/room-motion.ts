@@ -1,8 +1,8 @@
 import { tables, cameraForVisitor } from './simulation-model.ts';
 import type { Point } from './simulation-model.ts';
 
-export const TRAVEL_MS = 2000;
-export const DWELL_MS = 2000;
+export const TRAVEL_MS = 1500;
+export const DWELL_MS = 1000;
 export const CYCLE_MS = TRAVEL_MS + DWELL_MS;
 const ZOOM_MS = 650;
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);

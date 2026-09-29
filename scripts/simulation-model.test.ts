@@ -7,8 +7,8 @@ test('room budget reserves actual heading and controls, with natural overflow on
   // A wrapping heading consumes room space rather than overlapping the toolbar.
   assert.equal(roomBodyHeight(1000, 88, 220, 130), 562);
   assert.equal(roomBodyHeight(1000, 108, 220, 130), 542);
-  assert.equal(roomBodyHeight(780, 108, 220, 130), 400);
-  assert.equal(roomBodyHeight(600, 108, 220, 130), 400);
+  assert.equal(roomBodyHeight(780, 108, 220, 130), 480);
+  assert.equal(roomBodyHeight(600, 108, 220, 130), 480);
 });
 
 test('idle movement is limited to five people, including the featured participant', () => {

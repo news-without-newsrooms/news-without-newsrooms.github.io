@@ -66,12 +66,16 @@ export default function WorkshopSimulation() {
         });
         frame.papers.forEach((p, i) => writeAttribute(paperNodes.current[i], 'transform', `translate(${p.x} ${p.y})`));
         writeAttribute(cameraNode.current, 'transform', `translate(${frame.camera.x} ${frame.camera.y}) scale(${frame.camera.scale})`);
+        if (roomViewport.current) writeStyle(roomViewport.current, '--room-camera-scale', String(frame.camera.scale));
         objectData.current.forEach(object => {
           const node = objectNodes.current[object.id];
           if (!node) return;
           const movingObject = object.stage === undefined ? object : {...object, x: frame.papers[object.stage].x, y: frame.papers[object.stage].y};
           const position = projectRoomObject(movingObject, frame.camera);
-          if (node.hidden === position.visible) node.hidden = !position.visible;
+          // Preserve the floating artwork/target clock while a camera view hides an object.
+          writeStyle(node, 'visibility', position.visible ? 'visible' : 'hidden');
+          writeAttribute(node, 'aria-hidden', String(!position.visible));
+          if (node.tabIndex !== (position.visible ? 0 : -1)) node.tabIndex = position.visible ? 0 : -1;
           writeStyle(node, 'left', `${position.left}%`); writeStyle(node, 'top', `${position.top}%`);
           writeStyle(node, 'width', `max(${object.stage === undefined ? 44 : 24}px, ${position.width}%)`);
           writeStyle(node, 'height', `max(${object.stage === undefined ? 44 : 24}px, ${position.height}%)`);
@@ -231,7 +235,7 @@ export default function WorkshopSimulation() {
             </g>;
           })}
           <g className="room-documents" aria-hidden="true">
-            {papers.map(p => <g key={p.id} className="room-paper" ref={node => { paperNodes.current[p.id] = node; }} transform={`translate(${initial.current.papers[p.id].x} ${initial.current.papers[p.id].y})`}><rect x="-11" y="-12" width="22" height="27" rx="1" fill="#fdfbf4" stroke={groupColors[p.id]} strokeWidth="1.5"/><rect x="-8" y="-8" width="16" height="4" fill={groupColors[p.id]}/><path d="M-7 1H7M-7 5H7M-7 9H3" stroke="#859081" strokeWidth="1"/></g>)}
+            {papers.map(p => <g key={p.id} className={`room-paper paper-${interests[p.id].id}`} ref={node => { paperNodes.current[p.id] = node; }} transform={`translate(${initial.current.papers[p.id].x} ${initial.current.papers[p.id].y})`}><g className="room-paper-art"><rect x="-11" y="-12" width="22" height="27" rx="1" fill="#fdfbf4" stroke={groupColors[p.id]} strokeWidth="1.5"/><rect x="-8" y="-8" width="16" height="4" fill={groupColors[p.id]}/><path d="M-7 1H7M-7 5H7M-7 9H3" stroke="#859081" strokeWidth="1"/></g></g>)}
           </g>
           </g>
         </svg>
@@ -245,7 +249,7 @@ export default function WorkshopSimulation() {
         <div className="room-legend"><span className="your-table"><i/>Your interest: {chosen.title}</span><span>{grouped ? `Your starting table: ${chosen.table}` : 'Follow the character marked “you”'}</span></div>
       </div>
     </div>
-    <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : 'Play walkthrough'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : 'Play walkthrough'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : '2s moving · 2s exploring'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
+    <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : 'Play walkthrough'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : 'Play walkthrough'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : '2.5s per scene'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
     <details className="visit-notes" onToggle={pausePlayback}><summary>Activity details & materials<span aria-hidden="true">+</span></summary>
     <div className="room-object-shelf"><p id="room-object-hint"><span className="double-line-key" aria-hidden="true">+</span>Click a paper or a double outline + to preview the material.</p><div aria-label="Room documents">{roomObjects.map(object => <button key={object.id} type="button" onClick={() => inspect(object.id)} aria-haspopup="dialog" aria-expanded={inspecting === object.id} aria-controls="room-preview">{object.title}<span aria-hidden="true">+</span></button>)}</div></div>
     <div className="simulation-detail" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><div><p className="simulation-session">{phase.session} · {phase.minutes} minutes</p><h3>{phase.title}</h3><p>{phase.action}</p></div><div className="simulation-output"><span>YOUR PART IN THIS MOMENT</span><p>{yourActivity(phase.id, interest)}</p><details className="phase-output"><summary>What the group produces</summary><p>{phase.output}</p></details></div></div>

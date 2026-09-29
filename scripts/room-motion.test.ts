@@ -77,7 +77,7 @@ test('direct jumps between any two activities have safe routes for every interes
 test('people, camera and paper targets share the same intermediate frame', () => {
   const h = motionHarness();
   h.engine.follow(true, false); h.engine.move(pose(6));
-  h.at(1000);
+  h.at(TRAVEL_MS / 2);
   const frame = h.read();
   assert.notDeepEqual(frame.people, pose(3).people);
   assert.notDeepEqual(frame.people, pose(6).people);
@@ -97,7 +97,7 @@ test('rapid selection replaces a journey from the current position without telep
   h.engine.move(pose(5, 2));
   assert.deepEqual(h.read().people, before);
   assert.equal(h.frames.size, 1);
-  h.at(2800);
+  h.at(800 + TRAVEL_MS);
   assert.deepEqual(h.read().people, pose(5, 2).people.map(({x,y}) => ({x,y})));
   assert.equal(h.frames.size, 0);
 });
@@ -107,7 +107,7 @@ test('inspection or leaving the scene freezes motion and resumes without a catch
   const paused = structuredClone(h.read());
   h.at(9000); assert.deepEqual(h.read(), paused); assert.equal(h.frames.size, 0);
   h.engine.suspend(false); assert.deepEqual(h.read().people, paused.people);
-  h.at(10400); assert.equal(h.read().travelling, false); assert.equal(h.frames.size, 0);
+  h.at(9000 + TRAVEL_MS - 600); assert.equal(h.read().travelling, false); assert.equal(h.frames.size, 0);
 });
 
 test('changing the viewpoint mid-walk does not restart or interrupt the journey', () => {
@@ -116,7 +116,7 @@ test('changing the viewpoint mid-walk does not restart or interrupt the journey'
   h.engine.follow(true);
   assert.deepEqual(h.read().people, before);
   h.at(1200); assert.equal(h.read().camera.scale, 1.72);
-  h.at(2000);
+  h.at(TRAVEL_MS);
   assert.deepEqual(h.read().people, pose(4).people.map(({x,y}) => ({x,y})));
   assert.equal(h.frames.size, 0);
 });
@@ -131,7 +131,7 @@ test('view controls work while paused without moving the participant', () => {
   h.engine.follow(false);
   assert.ok(h.read().camera.x === 0 && h.read().camera.y === 0 && h.read().camera.scale === 1);
   assert.deepEqual(h.read().people, people);
-  h.engine.suspend(false); h.at(2000);
+  h.engine.suspend(false); h.at(TRAVEL_MS);
   assert.deepEqual(h.read().people, pose(4).people.map(({x,y}) => ({x,y})));
 });
 
@@ -151,7 +151,7 @@ test('every sampled route point remains furniture-safe and endpoints are exact',
   assert.deepEqual(sampleRoute(route, 1), route.at(-1));
 });
 
-test('playback advances after the initial dwell, then every four seconds, and stops at the end', () => {
+test('playback advances after the initial dwell, then every 2.5 seconds, and stops at the end', () => {
   let now = 0, id = 0, playing = false; const steps: number[] = [];
   const timers = new Map<number, {at: number; callback: () => void}>();
   const controller = createRoomPlayback(3, {
@@ -159,12 +159,12 @@ test('playback advances after the initial dwell, then every four seconds, and st
     cancel: id => { timers.delete(id); }, advance: index => steps.push(index), state: value => { playing = value; },
   });
   const at = (time: number) => { now = time; for (const [id,t] of timers) if (t.at <= now) { timers.delete(id); t.callback(); } };
-  assert.equal(CYCLE_MS, 4000);
-  controller.play(0); at(1999); assert.deepEqual(steps, []);
-  at(2000); assert.deepEqual(steps, [1]); at(5999); assert.deepEqual(steps, [1]);
-  at(6000); assert.deepEqual(steps, [1,2]); at(10000); assert.equal(playing, false); assert.equal(timers.size, 0);
+  assert.equal(CYCLE_MS, 2500);
+  controller.play(0); at(999); assert.deepEqual(steps, []);
+  at(1000); assert.deepEqual(steps, [1]); at(3499); assert.deepEqual(steps, [1]);
+  at(3500); assert.deepEqual(steps, [1,2]); at(6000); assert.equal(playing, false); assert.equal(timers.size, 0);
   controller.play(0); const stale = [...timers.values()][0].callback; controller.pause(); stale();
   assert.deepEqual(steps, [1,2]); assert.equal(timers.size, 0);
-  controller.play(0, 1000); at(12999); assert.deepEqual(steps, [1,2]); at(13000); assert.deepEqual(steps, [1,2,1]);
+  controller.play(0, 1000); at(7999); assert.deepEqual(steps, [1,2]); at(8000); assert.deepEqual(steps, [1,2,1]);
   controller.dispose(); assert.equal(timers.size, 0);
 });
