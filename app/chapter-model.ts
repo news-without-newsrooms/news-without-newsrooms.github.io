@@ -1,7 +1,7 @@
 export const chapters = [
   ['overview', 'Overview'], ['workshop', 'The workshop'], ['walkthrough', 'In the room'],
   ['program', 'Program'], ['participate', 'Participate'], ['prepare', 'Before you arrive'],
-  ['organizers', 'Organizers'], ['practical', 'Practical details'], ['contact', 'Contact'],
+  ['organizers', 'Organizers'],
 ] as const;
 
 export const TOUR_DELAY = 3000;

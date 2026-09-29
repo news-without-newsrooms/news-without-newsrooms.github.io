@@ -754,7 +754,7 @@ details[open]>summary svg {
   line-height: 1.8;
   margin-top: 17px;
 }
-/* Preparation, people, practicalities */
+/* Preparation and people */
 .prepare {
   border-top: 0;
 }
@@ -864,16 +864,8 @@ details[open]>summary svg {
   color: var(--muted);
   padding-top: 8px;
 }
-.practical {
-  display: grid;
-  grid-template-columns: .85fr 1.15fr;
-  gap: 9%;
-}
-.practical>div>p:not(.eyebrow) {
-  font-size: 14px;
-  color: var(--muted);
-  margin-top: 24px;
-}
+
+
 .text-link {
   display: inline-flex;
   align-items: center;
@@ -883,29 +875,10 @@ details[open]>summary svg {
   text-decoration: underline;
   text-underline-offset: 5px;
 }
-.faq-list details {
-  border-bottom: 1px solid var(--line);
-}
-.faq-list details:first-child {
-  border-top: 1px solid var(--ink);
-}
-.faq-list summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 25px;
-  min-height: 76px;
-  padding-block: 20px;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: -.025em;
-}
-.faq-list details>p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.8;
-  padding: 0 25px 25px 0;
-}
+
+
+
+
 footer {
   background: var(--ink);
   color: var(--paper);
@@ -919,9 +892,12 @@ footer {
   padding-bottom: 63px;
 }
 footer h2 {
-  font: 900 clamp(52px,6.2vw,90px)/.94 var(--display);
+  font: 900 clamp(34px,5.5vw,82px)/1 var(--display);
   text-transform: uppercase;
   letter-spacing: -.01em;
+}
+footer .footer-subtitle>span {
+  display: block;
 }
 footer .eyebrow {
   color: #bcbdb4;
@@ -1762,13 +1738,8 @@ footer .eyebrow {
   .person h3 {
     font-size: 24px;
   }
-  .practical {
-    grid-template-columns: 1fr;
-    gap: 35px;
-  }
-  .practical>div>p:not(.eyebrow) {
-    margin-top: 14px;
-  }
+
+
   .simulation-body {
     display: flex;
     flex-direction: column;
@@ -2181,13 +2152,8 @@ footer .eyebrow {
   .person details p {
     font-size: 15px;
   }
-  .faq-list summary {
-    font-size: 15px;
-    min-height: 72px;
-  }
-  .faq-list details>p {
-    font-size: 14px;
-  }
+
+
   .footer-top {
     gap: 34px;
     padding-bottom: 38px;
@@ -2196,7 +2162,7 @@ footer .eyebrow {
     padding-block: 49px 90px;
   }
   footer h2 {
-    font-size: 58px;
+    font-size: clamp(34px,8.4vw,50px);
   }
   .contact-email {
     font-size: 16px;

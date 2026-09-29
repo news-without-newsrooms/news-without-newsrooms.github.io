@@ -14,7 +14,8 @@ export default function ChapterNavigation() {
   useEffect(() => {
     const desktop = matchMedia('(min-width: 1000px) and (min-height: 650px) and (pointer: fine)');
     const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-    const sections = chapters.map(([id]) => document.getElementById(id)!);
+    // The footer is a scroll destination, but not an entry in the chapter rail.
+    const sections = [...chapters.map(([id]) => document.getElementById(id)!), document.getElementById('contact')!];
     const html = document.documentElement;
     let current = 0, auto = false, animating = false, disposed = false;
     let timer = 0, settleTimer = 0, frame = 0, fallback = 0, wheelSum = 0, lastWheel = 0, gestureUntil = 0;
@@ -62,7 +63,7 @@ export default function ChapterNavigation() {
     const go = (index: number) => {
       if (!sections[index]) return;
       pause(); move(target(index));
-      history.replaceState(null, '', location.pathname + location.search + (index ? '#' + chapters[index][0] : ''));
+      history.replaceState(null, '', location.pathname + location.search + (index ? '#' + sections[index].id : ''));
     };
     const nestedScroll = (node: Element | null, delta: number) => {
       for (let item = node; item && item !== document.body; item = item.parentElement) {
@@ -102,7 +103,7 @@ export default function ChapterNavigation() {
     };
     const visibility = () => { if (document.hidden) pause(); };
     const hash = () => {
-      const index = chapters.findIndex(([id]) => '#' + id === location.hash);
+      const index = sections.findIndex(section => '#' + section.id === location.hash);
       if (index >= 0) go(index);
     };
     controller.current = {
@@ -139,7 +140,7 @@ export default function ChapterNavigation() {
     };
   }, []);
 
-  return <nav className="chapter-nav" aria-label="Chapter navigation">
+  return <nav className="chapter-nav" aria-label="Chapter navigation" hidden={active >= chapters.length}>
     <span className="chapter-position" aria-hidden="true">{String(active + 1).padStart(2, '0')}</span>
     <div className="chapter-dots">{chapters.map(([id, name], index) => <a key={id} href={'#' + id} aria-label={name} aria-current={index === active ? 'location' : undefined} onClick={event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
