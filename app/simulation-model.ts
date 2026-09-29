@@ -20,7 +20,7 @@ export function roomBodyHeight(viewport: number, header: number, beforeBody: num
   return Math.max(480, Math.floor(viewport - header - beforeBody - afterBody));
 }
 
-// A small idle cast keeps the room alive without animating every body continuously.
+// Five upper-body gestures complement the shared foot animation without moving every torso.
 export function hasIdleMotion(id: number) { return [2, 6, 9, 14, 18].includes(id); }
 
 export const tables = [

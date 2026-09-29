@@ -150,12 +150,24 @@ export default function WorkshopSimulation() {
     if (restart) setStep(0);
     playback.current?.play(restart ? 0 : step, restart ? TRAVEL_MS : motion.current?.remaining() ?? 0);
   };
+  const playFullVisit = () => {
+    if (playing) { play(); return; }
+    setInspecting(null); setMotionPaused(false); setStep(0); revealScene();
+    playback.current?.play(0, step === 0 ? motion.current?.remaining() ?? 0 : TRAVEL_MS);
+  };
 
   return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${ambientMotion && inView && pageVisible && !reducedMotion && !inspecting && !motionPaused ? 'is-animated' : ''}`} ref={root}>
     <div className="simulation-toolbar"><div><span className="simulation-caption">PITTSBURGH · WORKSHOP PREVIEW</span></div><span className="visitor-key"><svg viewBox="0 0 28 36" width="24" height="31" aria-hidden="true" shapeRendering="crispEdges"><path d="M7 21h5v12H7m9-12h5v12h-5" fill="#586566"/><path d="M6 13h16v13H6" fill="#47757c"/><path d="M8 2h12v12H8" fill="#d5ae8b"/><path d="M7 0h14v5H7m0 5h3v4H7" fill="#554b3d"/><path d="M11 8h2v2h-2m5-2h2v2h-2" fill="#303d39"/><path d="M12 14h4v11h-4" fill="#eee8d7"/></svg><span>Your participant</span></span></div>
     <div className="simulation-body">
       <PittsburghScene />
       <aside className="simulation-console" aria-label="Your visit controls">
+    <div className="visit-launch">
+      <button type="button" className="visit-launch-button" onClick={playFullVisit} disabled={reducedMotion} aria-label={playing ? 'Pause the visit' : 'Play all nine activities from the beginning'}>
+        {playing ? <Pause size={20} aria-hidden="true"/> : <Play size={20} aria-hidden="true"/>}
+        <span>{playing ? 'Pause the visit' : 'Play the full visit'}</span>
+      </button>
+      <p>{reducedMotion ? 'Reduced motion is on. Explore with 01–09 below.' : playing ? 'Playing 01–09 automatically' : 'Opening → Next steps · 9 activities'}</p>
+    </div>
     <fieldset className="interest-options"><legend>Your perspective</legend><div className="interest-grid">{interests.map((item, index) => <label key={item.id} className={interest === index ? 'is-selected' : ''}><input type="radio" name="workshop-interest" value={item.id} checked={interest === index} onChange={() => { pausePlayback(); setMotionPaused(false); setInspecting(null); setInterest(index); setFollowing(true); revealScene(); }}/><span><strong>{item.title}</strong></span></label>)}</div><p className="interest-question">{chosen.question}</p></fieldset>
       <p className="phase-label">Explore the day</p>
       <nav className="phase-list" aria-label="Workshop moments">
@@ -217,9 +229,10 @@ export default function WorkshopSimulation() {
             return <g key={person.id} className={`room-person${hasIdleMotion(person.id) ? ' has-idle-motion' : ''}`} ref={node => { personNodes.current[person.id] = node; }} transform={`translate(${initial.current.people[person.id].x} ${initial.current.people[person.id].y})`} aria-hidden="true">
               <ellipse cy="16" rx="13" ry="5" fill="#716d5a" opacity=".18"/>
               {person.visitor && <ellipse cy="16" rx="18" ry="8" fill="none" stroke="#47757c" strokeWidth="1.4" strokeDasharray="3 3"/>}
-              <g className="pixel-person" shapeRendering="crispEdges" style={{'--idle-delay': `${person.id * -75}ms`} as CSSProperties}>
+              <g className="pixel-person" shapeRendering="crispEdges" style={{'--idle-delay': `${person.id * -137}ms`, '--step-duration': `${420 + person.id % 4 * 40}ms`} as CSSProperties}>
                 <g className="pixel-leg-left"><rect x="-6" y="9" width="5" height="9" fill="#566163"/><rect x="-7" y="16" width="6" height="3" fill="#454c46"/></g>
                 <g className="pixel-leg-right"><rect x="2" y="9" width="5" height="9" fill="#566163"/><rect x="2" y="16" width="6" height="3" fill="#454c46"/></g>
+                <g className="pixel-upper">
                 <rect x="-8" y="-3" width="16" height="15" fill={shirt}/>
                 <rect x="-11" y="-2" width="4" height="9" fill={shirt}/><rect x="8" y="-2" width="4" height="9" fill={shirt}/>
                 <rect x="-11" y="7" width="4" height="3" fill={skin}/><rect x="8" y="7" width="4" height="3" fill={skin}/>
@@ -229,6 +242,7 @@ export default function WorkshopSimulation() {
                 <rect x="-3" y="-9" width="1.8" height="2" fill="#354038"/><rect x="3" y="-9" width="1.8" height="2" fill="#354038"/>
                 <rect x="0" y="-5" width="2" height="1" fill="#98745b"/>
                 {person.visitor ? <><path d="M-2-3h5v13H-2" fill="#eae5d8"/><rect x="-7" y="0" width="3" height="2" fill="#e0c886"/></> : person.organizer ? <><path d="M-2-3l2 7 3-7" fill="none" stroke="#ddd7c2" strokeWidth="1"/><rect x="-1" y="4" width="4" height="5" fill="#f0e7cc"/></> : null}
+                </g>
               </g>
               {person.visitor && <g className="you-label"><rect x="-21" y="-46" width="42" height="18" rx="3" fill="#3f666b"/><path d="M-4-29L0-24 4-29" fill="#3f666b"/><text y="-33" textAnchor="middle">YOU</text></g>}
               {person.visitor && following && <g className="thought-bubble"><path d="M-98-88H98V-57H16L9-50V-57H-98Z" fill="#fffff7" stroke="#667b63" strokeWidth="1"/><text y="-69" textAnchor="middle">{thoughtBubbles[phase.id]}</text></g>}
@@ -249,7 +263,7 @@ export default function WorkshopSimulation() {
         <div className="room-legend"><span className="your-table"><i/>Your interest: {chosen.title}</span><span>{grouped ? `Your starting table: ${chosen.table}` : 'Follow the character marked “you”'}</span></div>
       </div>
     </div>
-    <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : 'Play walkthrough'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : 'Play walkthrough'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : '2.5s per scene'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
+    <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : step === phases.length - 1 ? 'Replay walkthrough' : 'Play from this activity'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : step === phases.length - 1 ? 'Replay' : 'Play from here'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : '2.5s per scene'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
     <details className="visit-notes" onToggle={pausePlayback}><summary>Activity details & materials<span aria-hidden="true">+</span></summary>
     <div className="room-object-shelf"><p id="room-object-hint"><span className="double-line-key" aria-hidden="true">+</span>Click a paper or a double outline + to preview the material.</p><div aria-label="Room documents">{roomObjects.map(object => <button key={object.id} type="button" onClick={() => inspect(object.id)} aria-haspopup="dialog" aria-expanded={inspecting === object.id} aria-controls="room-preview">{object.title}<span aria-hidden="true">+</span></button>)}</div></div>
     <div className="simulation-detail" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><div><p className="simulation-session">{phase.session} · {phase.minutes} minutes</p><h3>{phase.title}</h3><p>{phase.action}</p></div><div className="simulation-output"><span>YOUR PART IN THIS MOMENT</span><p>{yourActivity(phase.id, interest)}</p><details className="phase-output"><summary>What the group produces</summary><p>{phase.output}</p></details></div></div>

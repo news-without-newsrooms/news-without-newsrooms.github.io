@@ -168,3 +168,26 @@ test('playback advances after the initial dwell, then every 2.5 seconds, and sto
   controller.play(0, 1000); at(7999); assert.deepEqual(steps, [1,2]); at(8000); assert.deepEqual(steps, [1,2,1]);
   controller.dispose(); assert.equal(timers.size, 0);
 });
+
+test('starting a full visit replaces an earlier timer and reaches all nine activities once', () => {
+  let now = 0, id = 0, playing = false;
+  const visited = [0], timers = new Map<number, {at: number; callback: () => void}>();
+  const controller = createRoomPlayback(phases.length, {
+    delay(callback, ms) { timers.set(++id, {at: now + ms, callback}); return id; },
+    cancel(id) { timers.delete(id); }, advance(index) { visited.push(index); }, state(value) { playing = value; },
+  });
+  controller.play(5);
+  const stale = [...timers.values()][0].callback;
+  controller.play(0, TRAVEL_MS);
+  stale();
+  assert.deepEqual(visited, [0]);
+  for (let i = 0; i < phases.length; i++) {
+    assert.equal(timers.size, 1);
+    const [key, timer] = [...timers.entries()][0];
+    now = timer.at; timers.delete(key); timer.callback();
+  }
+  assert.deepEqual(visited, phases.map((_, i) => i));
+  assert.equal(playing, false);
+  assert.equal(timers.size, 0);
+  assert.equal(now, phases.length * CYCLE_MS);
+});

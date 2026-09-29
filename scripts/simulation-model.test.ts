@@ -11,7 +11,7 @@ test('room budget reserves actual heading and controls, with natural overflow on
   assert.equal(roomBodyHeight(600, 108, 220, 130), 480);
 });
 
-test('idle movement is limited to five people, including the featured participant', () => {
+test('upper-body gestures are limited to five people, including the featured participant', () => {
   const people = peopleForPhase('opening', 20);
   assert.equal(people.filter(p => hasIdleMotion(p.id)).length, 5);
   assert.ok(hasIdleMotion(people.find(p => p.visitor)!.id));

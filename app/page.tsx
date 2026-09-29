@@ -90,7 +90,7 @@ export default function Home() {
         <div className="hero-index"><p>JOURNALISM / HCI / AI / POLICY</p><p>PITTSBURGH, MAY 2027 <a href="https://chi2027.acm.org/" target="_blank" rel="noreferrer">2027 CHI <Arrow external /></a></p></div>
         <h1 id="page-title" aria-label="News Without Newsrooms"><span className="title-line">News Without</span><span className="title-line title-last">Newsrooms</span></h1>
         <div className="hero-band">
-          <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p>Belief, Spread, and Aftermath as Questions for Journalism and HCI</p></div>
+          <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p><span className="hero-theme">Belief, Spread, and Aftermath</span>{' '}<span className="hero-question">as Questions for <span className="hero-fields"><strong>Journalism</strong> and <strong>HCI</strong></span></span></p></div>
           <div className="hero-copy"><p className="hero-subtitle">What can people see, verify, and do when a post looks like news?</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
         </div>
       </section>
@@ -117,10 +117,21 @@ export default function Home() {
       </div></section>
 
       <section className="section wrap chapter" id="program" aria-labelledby="program-title">
-        <div className="section-heading"><div><p className="eyebrow">03 / PROGRAM DETAILS</p><h2 id="program-title">The proposed program.</h2></div><p className="section-intro">Two 90-minute sessions, from shared cases to research questions with a next step.</p></div>
-        <div className="sessions">{sessions.map(s => <article className="session" key={s.n}><header className="session-heading"><span className="session-label">SESSION {s.n}<span>90 MIN</span></span><h3>{s.title}</h3></header><ol>{s.rows.map(([mins, title, description]) => <li key={title}><div className="activity-line"><h4>{title}</h4><span className="activity-duration">{mins} min</span></div><p>{description}</p></li>)}</ol></article>)}</div>
-        <p className="schedule-note">Provisional timings, with a 30-minute conference break. If sessions are 75 minutes, every activity stays with shorter segments. Final timing and room details follow acceptance.</p>
-        <div className="outcomes"><h3>What we take forward</h3><div><h4>A shared sequence</h4><p>Records, actions, unknowns, and disagreements across stages.</p></div><div><h4>Questions with next steps</h4><p>Research questions, volunteer owners, and ideas to pursue together.</p></div><div><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
+        <div className="section-heading"><div><p className="eyebrow">03 / PROGRAM DETAILS</p><h2 id="program-title">The proposed program.</h2></div><p className="section-intro">Shared cases, then questions to pursue together.<span className="program-hint">Select an activity for details.</span></p></div>
+        <div className="sessions">{sessions.map(s => <article className="session" key={s.n}>
+          <header className="session-heading"><span className="session-label">SESSION {s.n}<span>90 MIN</span></span><h3>{s.title}</h3></header>
+          <ol>{s.rows.map(([mins, title, description]) => <li key={title}>
+            <details className="program-activity" name={`session-${s.n}`}>
+              <summary><span>{title}</span><ChevronDown size={15} aria-hidden="true" /></summary>
+              <div className="activity-description"><p>{description}</p><span className="activity-duration">{mins} min · proposed</span></div>
+            </details>
+          </li>)}</ol>
+        </article>)}</div>
+        <details className="outcomes">
+          <summary><span><span className="outcomes-label">What we take forward</span><span className="outcomes-preview">A shared sequence, research questions, and reusable materials.</span></span><ChevronDown size={18} aria-hidden="true" /></summary>
+          <div className="outcomes-details"><div><h4>A shared sequence</h4><p>Records, actions, unknowns, and disagreements across stages.</p></div><div><h4>Questions with next steps</h4><p>Research questions, volunteer owners, and ideas to pursue together.</p></div><div><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
+        </details>
+        <p className="schedule-note">Provisional program · Conference break between sessions · Final timing follows acceptance.</p>
       </section>
 
       <section className="participation-section chapter" id="participate" aria-labelledby="participate-title"><div className="wrap participation-layout">
