@@ -768,21 +768,35 @@ footer .eyebrow {
   color: #bcbdb4;
 }
 .contact-email {
-  display: flex;
+  display: inline-flex;
+  max-width: 100%;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 12px;
   min-height: 62px;
-  border-bottom: 1px solid #64665d;
-  color: var(--accent);
+  color: var(--paper);
   font-size: clamp(15px,1.65vw,24px);
   font-weight: 800;
   letter-spacing: -.035em;
 }
 .contact-email span {
+  min-width: 0;
   overflow-wrap: anywhere;
+  padding: .3em .5em;
+  background: var(--accent);
+  color: var(--ink);
+  line-height: 1.6;
+}
+.contact-email:hover span {
+  background: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: .18em;
+}
+.contact-email:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 .contact-email svg {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
 }
