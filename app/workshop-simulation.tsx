@@ -170,10 +170,12 @@ export default function WorkshopSimulation() {
       <div className="simulation-scene" id="workshop-scene" role="region" aria-labelledby="simulation-scene-title">
         <div className="scene-caption" aria-live={playing ? 'off' : 'polite'}><span>{String(step + 1).padStart(2, '0')} / 09</span><strong id="simulation-scene-title">{phase.title}</strong><small>Workshop time · {phase.minutes} min</small></div>
         <div className="view-controls" role="group" aria-label="Room view and playback">
-          <button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}><LayoutGrid size={15} aria-hidden="true"/><span>Whole room</span></button>
-          <button type="button" aria-pressed={following} onClick={() => setFollowing(true)}><UserRound size={15} aria-hidden="true"/><span>Follow a participant</span></button>
+          <div className="view-switch" role="group" aria-label="Viewpoint">
+            <button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}><LayoutGrid size={14} aria-hidden="true"/><span>Whole room</span></button>
+            <button type="button" aria-pressed={following} aria-label="Follow a participant" onClick={() => setFollowing(true)}><UserRound size={14} aria-hidden="true"/><span>Follow<span className="view-label-detail"> participant</span></span></button>
+          </div>
           <button type="button" className="scene-play" onClick={playFullVisit} disabled={reducedMotion} aria-label={playing ? 'Pause the visit' : 'Play all nine activities from the beginning'} title={reducedMotion ? 'Reduced motion is on. Use the numbered activities.' : playing ? 'Pause the visit' : 'Play the full visit, from Opening to Next steps'}>
-            {playing ? <Pause size={17} aria-hidden="true"/> : <Play size={17} aria-hidden="true"/>}<span>{playing ? 'Pause' : 'Play 01–09'}</span>
+            {playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}<span>{playing ? 'Pause' : 'Play'}</span><span className="scene-play-range" aria-hidden="true">01–09</span>
           </button>
         </div>
         <div className="room-stage"><div className="room-viewport" ref={roomViewport}><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
