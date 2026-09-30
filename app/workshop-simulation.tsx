@@ -10,6 +10,7 @@ import { roomObjectsForPhase, projectRoomObject } from './room-objects';
 import type { RoomObjectId } from './room-objects';
 import PittsburghScene from './pittsburgh-scene';
 import { createRoomMotion, createRoomPlayback, roomBrowserClock, TRAVEL_MS } from './room-motion';
+import { participantBrief } from './participant-guide';
 
 const groupColors = ['#637971', '#a27f65', '#687a92'];
 const writeAttribute = (node: Element | null | undefined, name: string, value: string) => {
@@ -46,6 +47,7 @@ export default function WorkshopSimulation() {
   const people = peopleForPhase(phase.id, count, interest);
   const papers = papersForPhase(phase.id);
   const chosen = interests[interest];
+  const brief = participantBrief(phase.id, interest);
   const camera = cameraForVisitor(initial.current.people[6], false);
   const roomObjects = roomObjectsForPhase(phase.id);
   const objectData = useRef(roomObjects);
@@ -108,20 +110,23 @@ export default function WorkshopSimulation() {
     const toolbar = element.querySelector<HTMLElement>('.simulation-toolbar')!;
     const controls = element.querySelector<HTMLElement>('.simulation-controls')!;
     const notes = element.querySelector<HTMLElement>('.visit-notes>summary')!;
+    const participantNotes = element.querySelector<HTMLElement>('.participant-brief')!;
     const desktop = matchMedia('(min-width:1000px) and (min-height:600px)');
     let frame = 0, disposed = false;
     const measure = () => {
       frame = 0;
       if (!desktop.matches) { element.style.removeProperty('--visit-body-height'); return; }
-      // Read only on resize/layout changes, never on scroll or animation frames.
+      // Read only on resize/layout changes, never on scroll or room animation frames.
+      const briefHeight = `${participantNotes.getBoundingClientRect().height}px`;
       const beforeBody = element.getBoundingClientRect().top - section.getBoundingClientRect().top + toolbar.getBoundingClientRect().height + 1;
       const afterBody = controls.getBoundingClientRect().height + notes.getBoundingClientRect().height + parseFloat(getComputedStyle(section).paddingBottom) + 3;
       const value = roomBodyHeight(innerHeight, headerOffset(), beforeBody, afterBody) + 'px';
+      writeStyle(element, '--participant-brief-height', briefHeight);
       if (element.style.getPropertyValue('--visit-body-height') !== value) element.style.setProperty('--visit-body-height', value);
     };
     const queue = () => { if (!disposed && !frame) frame = requestAnimationFrame(measure); };
     const observer = new ResizeObserver(queue);
-    [heading, toolbar, controls, notes, document.querySelector('.site-header')].forEach(node => { if (node) observer.observe(node); });
+    [heading, toolbar, controls, notes, participantNotes, document.querySelector('.site-header')].forEach(node => { if (node) observer.observe(node); });
     window.addEventListener('resize', queue);
     void document.fonts.ready.then(queue);
     queue();
@@ -156,7 +161,7 @@ export default function WorkshopSimulation() {
     playback.current?.play(0, step === 0 ? motion.current?.remaining() ?? 0 : TRAVEL_MS);
   };
 
-  return <div className={`workshop-simulation ${playing && inView ? 'is-playing' : ''} ${ambientMotion && inView && pageVisible && !reducedMotion && !inspecting && !motionPaused ? 'is-animated' : ''}`} ref={root}>
+  return <div className={`workshop-simulation ${following ? 'is-following' : ''} ${playing && inView ? 'is-playing' : ''} ${ambientMotion && inView && pageVisible && !reducedMotion && !inspecting && !motionPaused ? 'is-animated' : ''}`} ref={root}>
     <div className="simulation-toolbar"><div><span className="simulation-caption">PITTSBURGH · WORKSHOP PREVIEW</span></div><span className="visitor-key"><svg viewBox="0 0 28 36" width="24" height="31" aria-hidden="true" shapeRendering="crispEdges"><path d="M7 21h5v12H7m9-12h5v12h-5" fill="#586566"/><path d="M6 13h16v13H6" fill="#47757c"/><path d="M8 2h12v12H8" fill="#d5ae8b"/><path d="M7 0h14v5H7m0 5h3v4H7" fill="#554b3d"/><path d="M11 8h2v2h-2m5-2h2v2h-2" fill="#303d39"/><path d="M12 14h4v11h-4" fill="#eee8d7"/></svg><span>Your participant</span></span></div>
     <div className="simulation-body">
       <PittsburghScene />
@@ -261,6 +266,11 @@ export default function WorkshopSimulation() {
         {following && <button className="room-minimap" type="button" onClick={() => setFollowing(false)} aria-label="Return to the whole-room view"><span>YOU IN THE ROOM</span><svg viewBox="0 0 800 520" aria-hidden="true"><rect x="45" y="33" width="710" height="425" fill="#f4f3e7" stroke="#91a18b" strokeWidth="9"/><rect x="272" y="56" width="258" height="70" fill="#b7c9ab"/>{tables.map(t => <ellipse key={t.label} cx={t.x} cy={t.y} rx="55" ry="45" fill="#d5c5a7"/>)}{people.map(person => <circle key={person.id} ref={node => { miniNodes.current[person.id] = node; }} cx={initial.current.people[person.id].x} cy={initial.current.people[person.id].y} r={person.visitor ? 22 : 10} fill={person.visitor ? '#315e66' : '#8f9e80'} stroke={person.visitor ? '#fffef5' : 'none'} strokeWidth="8"/>)}</svg><span>Whole room ↗</span></button>}
         </div>
         <RoomInspector object={inspecting} phase={phase.id} interest={interest} onClose={closePreview}/></div>
+        <div className="participant-brief" hidden={!following} role="region" aria-label="Your part in this activity" aria-live={playing ? 'off' : 'polite'} aria-atomic="true">
+          <div className="participant-action"><span>Your move · Example</span><p>{brief.action}</p></div>
+          <div className="participant-takeaway"><span>Take away</span><p>{brief.takeaway}</p></div>
+          <button type="button" className="participant-material" onClick={() => inspect(brief.material)} aria-haspopup="dialog" aria-expanded={inspecting === brief.material} aria-controls="room-preview"><span>{brief.materialLabel}</span><span aria-hidden="true">+</span></button>
+        </div>
         <div className="room-legend"><span className="your-table"><i/>Your interest: {chosen.title}</span><span>{grouped ? `Your starting table: ${chosen.table}` : 'Follow the character marked “you”'}</span></div>
       </div>
     </div>

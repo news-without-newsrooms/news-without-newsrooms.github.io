@@ -18,7 +18,7 @@ export default function RoomInspector({ object, phase, interest, onClose }: {
     node.show();
     const dismiss = (event: PointerEvent) => {
       if (!(event.target instanceof Element) || node.contains(event.target)) return;
-      if (event.target.closest('.room-hotspot, .room-object-shelf button')) return;
+      if (event.target.closest('.room-hotspot, .room-object-shelf button, .participant-material')) return;
       onClose();
     };
     const escape = (event: KeyboardEvent) => {
