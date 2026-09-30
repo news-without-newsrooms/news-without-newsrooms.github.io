@@ -8,7 +8,10 @@ test('room budget reserves actual heading and controls, with natural overflow on
   assert.equal(roomBodyHeight(1000, 88, 220, 130), 562);
   assert.equal(roomBodyHeight(1000, 108, 220, 130), 542);
   assert.equal(roomBodyHeight(780, 108, 220, 130), 480);
-  assert.equal(roomBodyHeight(600, 108, 220, 130), 480);
+  // Normal-zoom laptop viewports now get a measured room instead of the old 480px floor.
+  assert.equal(roomBodyHeight(650, 76, 82, 99), 393);
+  assert.equal(roomBodyHeight(600, 76, 82, 99), 343);
+  assert.equal(roomBodyHeight(600, 108, 220, 130), 340);
 });
 
 test('upper-body gestures are limited to five people, including the featured participant', () => {

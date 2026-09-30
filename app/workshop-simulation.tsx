@@ -108,7 +108,7 @@ export default function WorkshopSimulation() {
     const toolbar = element.querySelector<HTMLElement>('.simulation-toolbar')!;
     const controls = element.querySelector<HTMLElement>('.simulation-controls')!;
     const notes = element.querySelector<HTMLElement>('.visit-notes>summary')!;
-    const desktop = matchMedia('(min-width:1000px) and (min-height:780px)');
+    const desktop = matchMedia('(min-width:1000px) and (min-height:600px)');
     let frame = 0, disposed = false;
     const measure = () => {
       frame = 0;
@@ -161,13 +161,6 @@ export default function WorkshopSimulation() {
     <div className="simulation-body">
       <PittsburghScene />
       <aside className="simulation-console" aria-label="Your visit controls">
-    <div className="visit-launch">
-      <button type="button" className="visit-launch-button" onClick={playFullVisit} disabled={reducedMotion} aria-label={playing ? 'Pause the visit' : 'Play all nine activities from the beginning'}>
-        {playing ? <Pause size={20} aria-hidden="true"/> : <Play size={20} aria-hidden="true"/>}
-        <span>{playing ? 'Pause the visit' : 'Play the full visit'}</span>
-      </button>
-      <p>{reducedMotion ? 'Reduced motion is on. Explore with 01–09 below.' : playing ? 'Playing 01–09 automatically' : 'Opening → Next steps · 9 activities'}</p>
-    </div>
     <fieldset className="interest-options"><legend>Your perspective</legend><div className="interest-grid">{interests.map((item, index) => <label key={item.id} className={interest === index ? 'is-selected' : ''}><input type="radio" name="workshop-interest" value={item.id} checked={interest === index} onChange={() => { pausePlayback(); setMotionPaused(false); setInspecting(null); setInterest(index); setFollowing(true); revealScene(); }}/><span><strong>{item.title}</strong></span></label>)}</div><p className="interest-question">{chosen.question}</p></fieldset>
       <p className="phase-label">Explore the day</p>
       <nav className="phase-list" aria-label="Workshop moments">
@@ -176,7 +169,13 @@ export default function WorkshopSimulation() {
       </aside>
       <div className="simulation-scene" id="workshop-scene" role="region" aria-labelledby="simulation-scene-title">
         <div className="scene-caption" aria-live={playing ? 'off' : 'polite'}><span>{String(step + 1).padStart(2, '0')} / 09</span><strong id="simulation-scene-title">{phase.title}</strong><small>Workshop time · {phase.minutes} min</small></div>
-        <div className="view-controls" role="group" aria-label="Room view and motion"><button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}><LayoutGrid size={15} aria-hidden="true"/>Whole room</button><button type="button" aria-pressed={following} onClick={() => setFollowing(true)}><UserRound size={15} aria-hidden="true"/>Follow a participant</button><button type="button" className="character-motion" disabled={reducedMotion} aria-label={ambientMotion && !reducedMotion ? 'Pause idle motion' : 'Resume idle motion'} title={reducedMotion ? 'Idle motion is off in your system settings' : ambientMotion ? 'Pause idle motion' : 'Resume idle motion'} onClick={() => setAmbientMotion(value => !value)}>{ambientMotion && !reducedMotion ? <Pause size={14} aria-hidden="true"/> : <Play size={14} aria-hidden="true"/>}</button></div>
+        <div className="view-controls" role="group" aria-label="Room view and playback">
+          <button type="button" aria-pressed={!following} onClick={() => setFollowing(false)}><LayoutGrid size={15} aria-hidden="true"/><span>Whole room</span></button>
+          <button type="button" aria-pressed={following} onClick={() => setFollowing(true)}><UserRound size={15} aria-hidden="true"/><span>Follow a participant</span></button>
+          <button type="button" className="scene-play" onClick={playFullVisit} disabled={reducedMotion} aria-label={playing ? 'Pause the visit' : 'Play all nine activities from the beginning'} title={reducedMotion ? 'Reduced motion is on. Use the numbered activities.' : playing ? 'Pause the visit' : 'Play the full visit, from Opening to Next steps'}>
+            {playing ? <Pause size={17} aria-hidden="true"/> : <Play size={17} aria-hidden="true"/>}<span>{playing ? 'Pause' : 'Play 01–09'}</span>
+          </button>
+        </div>
         <div className="room-stage"><div className="room-viewport" ref={roomViewport}><svg className="room-map" viewBox="0 0 800 520" role="img" aria-labelledby="room-title room-description">
           <title id="room-title">{`${phase.title}: an illustrative workshop room`}</title>
           <desc id="room-description">{count} people including six organizers. {phase.action} Pixel characters represent participants. Your chosen interest is {chosen.title}. People and furniture show a possible arrangement, not a confirmed room plan.</desc>
@@ -265,6 +264,7 @@ export default function WorkshopSimulation() {
     </div>
     <div className="simulation-controls"><div><button type="button" className="simulation-play" onClick={play} disabled={reducedMotion} aria-label={playing ? 'Pause walkthrough' : step === phases.length - 1 ? 'Replay walkthrough' : 'Play from this activity'}>{playing ? <Pause size={15} aria-hidden="true"/> : <Play size={15} aria-hidden="true"/>}{playing ? 'Pause' : step === phases.length - 1 ? 'Replay' : 'Play from here'}</button><button type="button" className="simulation-reset" onClick={() => chooseStep(0)} aria-label="Restart walkthrough"><RotateCcw size={17} aria-hidden="true"/></button><span className="playback-note">{reducedMotion ? 'Reduced motion: use the step controls.' : '2.5s per scene'}</span></div><div className="simulation-next"><button type="button" onClick={() => chooseStep(step - 1)} disabled={step === 0} aria-label="Previous activity"><ArrowLeft size={17} aria-hidden="true"/></button><span>{step + 1} / {phases.length}</span><button type="button" onClick={() => chooseStep(step + 1)} disabled={step === phases.length - 1} aria-label="Next activity"><ArrowRight size={17} aria-hidden="true"/></button></div></div>
     <details className="visit-notes" onToggle={pausePlayback}><summary>Activity details & materials<span aria-hidden="true">+</span></summary>
+    <label className="ambient-setting"><input type="checkbox" checked={ambientMotion && !reducedMotion} disabled={reducedMotion} onChange={event => setAmbientMotion(event.target.checked)}/><span>Character & paper movement{reducedMotion ? ' · reduced motion is on' : ''}</span></label>
     <div className="room-object-shelf"><p id="room-object-hint"><span className="double-line-key" aria-hidden="true">+</span>Click a paper or a double outline + to preview the material.</p><div aria-label="Room documents">{roomObjects.map(object => <button key={object.id} type="button" onClick={() => inspect(object.id)} aria-haspopup="dialog" aria-expanded={inspecting === object.id} aria-controls="room-preview">{object.title}<span aria-hidden="true">+</span></button>)}</div></div>
     <div className="simulation-detail" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><div><p className="simulation-session">{phase.session} · {phase.minutes} minutes</p><h3>{phase.title}</h3><p>{phase.action}</p></div><div className="simulation-output"><span>YOUR PART IN THIS MOMENT</span><p>{yourActivity(phase.id, interest)}</p><details className="phase-output"><summary>What the group produces</summary><p>{phase.output}</p></details></div></div>
     <p id="simulation-assumptions" className="simulation-assumptions">An illustrative visit with 20 pixel characters, including six organizers. Dialogue and the featured participant’s role are examples. The planned attendance is 15–25. Your interest suggests a starting group; organizers will balance the actual groups. The city scene is inspired by Pittsburgh and the David L. Lawrence Convention Center, the announced CHI 2027 venue. This room, seating, and panel are illustrative. During the exchange, worksheets move between groups.</p>

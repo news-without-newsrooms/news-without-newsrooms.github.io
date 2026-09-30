@@ -91,7 +91,7 @@ export default function Home() {
         <h1 id="page-title" aria-label="News Without Newsrooms"><span className="title-line">News Without</span><span className="title-line title-last">Newsrooms</span></h1>
         <div className="hero-band">
           <div className="hero-statement"><span className="label">A PROPOSED CHI 2027 WORKSHOP</span><p><span className="hero-theme">Belief, Spread, and Aftermath</span>{' '}<span className="hero-question">as Questions for <span className="hero-fields"><strong>Journalism</strong> and <strong>HCI</strong></span></span></p></div>
-          <div className="hero-copy"><p className="hero-subtitle">What can people see, verify, and do when a post looks like news?</p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
+          <div className="hero-copy"><p className="hero-subtitle"><span>What can people see, verify, and do</span>{' '}<span>when a post looks like news?</span></p><a className="hero-link" href="#walkthrough">Explore the workshop <Arrow /></a></div>
         </div>
       </section>
       </div>

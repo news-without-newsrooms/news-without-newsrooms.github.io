@@ -14,10 +14,10 @@ export const phases = [
 export type PhaseId = typeof phases[number]['id'];
 export type Point = { x: number; y: number };
 
-/** Keep a readable room when chrome is taller than the viewport allows.
- * The chapter then grows naturally instead of overlapping or clipping its heading. */
+/** Short laptops use compact controls; large screens retain the larger room minimum.
+ * If surrounding content still cannot fit, grow naturally rather than clipping it. */
 export function roomBodyHeight(viewport: number, header: number, beforeBody: number, afterBody: number) {
-  return Math.max(480, Math.floor(viewport - header - beforeBody - afterBody));
+  return Math.max(viewport < 780 ? 340 : 480, Math.floor(viewport - header - beforeBody - afterBody));
 }
 
 // Five upper-body gestures complement the shared foot animation without moving every torso.
