@@ -32,13 +32,13 @@
   --ink: #181916;
   --muted: #60615b;
   --line: #cfcec4;
-  --accent: #e8a475;
-  --accent-soft: #f0d1b9;
-  --accent-hover: #df9463;
-  --accent-ink: #4f3324;
-  --accent-line: #b88969;
-  --accent-tint: #e8a47522;
-  --accent-selected: #e8a47544;
+  --accent: #ef982d;
+  --accent-soft: #f5c180;
+  --accent-hover: #e68c1f;
+  --accent-ink: #443018;
+  --accent-line: #a8732b;
+  --accent-tint: #ef982d22;
+  --accent-selected: #ef982d44;
   --surface: #edede5;
   --sans: Manrope,Arial,sans-serif;
   --display: 'Barlow Condensed','Arial Narrow',Impact,sans-serif;
@@ -2228,7 +2228,7 @@ footer .eyebrow {
   text-underline-offset: 4px;
 }
 .room-object-shelf button:hover {
-  color: #884525;
+  color: #7b4b13;
 }
 .room-object-shelf button>span {
   font-size: 15px;
@@ -2488,8 +2488,8 @@ footer .eyebrow {
 .view-controls button svg { flex-shrink: 0; }
 .view-controls button>span { white-space: nowrap; }
 .view-controls button:focus-visible { outline: 2px solid #344f43; outline-offset: 3px; }
-.view-controls button.scene-play { min-width: 106px; margin: 0; padding-inline: 12px; border-radius: 7px; background: var(--accent); color: var(--ink); border-color: var(--accent-line); box-shadow: 0 1px 2px #593a2912; }
-.view-controls button.scene-play:hover { background: var(--accent-hover); border-color: #a76b46; }
+.view-controls button.scene-play { min-width: 106px; margin: 0; padding-inline: 12px; border-radius: 7px; background: var(--accent); color: var(--ink); border-color: var(--accent-line); box-shadow: 0 1px 2px #44301812; }
+.view-controls button.scene-play:hover { background: var(--accent-hover); border-color: #96601c; }
 .scene-play-range { font: 10px/1.4 var(--mono); color: var(--accent-ink); margin-left: 2px; }
 .view-controls button.scene-play>span { white-space: nowrap; }
 .view-controls button.scene-play:disabled { opacity: .6; cursor: default; }
@@ -2607,7 +2607,7 @@ footer .eyebrow {
 .participant-takeaway { padding-left: 18px; border-left: 1px solid #d3dacf; }
 .participant-material { display: inline-flex; gap: 10px; align-items: center; justify-content: space-between; min-height: 44px; padding: 8px 0; font-size: 11px; line-height: 1.5; color: #344f43; background: transparent; border: 0; text-align: left; }
 .participant-material>span:first-child { text-decoration: underline; text-underline-offset: 4px; }
-.participant-material>span:last-child { display: grid; place-items: center; width: 23px; height: 23px; flex: 0 0 23px; border: 3px double #a76b46; background: var(--accent-soft); color: var(--ink); }
+.participant-material>span:last-child { display: grid; place-items: center; width: 23px; height: 23px; flex: 0 0 23px; border: 3px double #96601c; background: var(--accent-soft); color: var(--ink); }
 .participant-material:hover>span:last-child { background: var(--accent); }
 .participant-material:focus-visible { outline: 2px solid #344f43; outline-offset: 3px; }
 .is-following .room-legend { display: none; }
