@@ -41,8 +41,8 @@ export default function RoomInspector({ object, phase, interest, onClose }: {
       <div className="preview-body" key={object}>
         <h3 id="preview-title">{object === 'materials' ? 'Inside the case pack' : object === 'board' ? 'On the shared board' : `${content.interest.table} worksheet`}</h3>
         {object === 'materials' ? <>
-          <p>A documented Korean accusation-video sequence, followed through its posts, circulation, and later information.</p>
-          <ul><li>Source records with checked English translations</li><li>Korean and Japanese comparison records</li><li>A shared worksheet for your group</li></ul>
+          <p>A documented Korean accusation-video sequence, followed through its posts, circulation, and later information. The person accused is not named.</p>
+          <ul><li>Each case’s platform, genre, jurisdiction, endpoint, sources, and dates</li><li>Checked English translations of Korean records</li><li>Korean and Japanese comparison cases, plus a US example</li><li>The documented event sequence, kept separate from evidence of what users were shown; missing evidence marked unknown</li><li>The common worksheet for your group</li></ul>
           <p id="preview-note" className="preview-note">Planned for two weeks before the workshop. The pack is still being prepared.</p>
         </> : object === 'board' ? <>
           <p className="preview-question">What can people see, verify, and do?</p>

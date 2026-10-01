@@ -33,7 +33,7 @@ The workshop walkthrough follows nine proposed activities. Choose an interest, t
 
 Double-outlined objects with a plus sign open readable document previews: the materials desk, the shared board, and the worksheets visible on tables. The same documents are available as labeled buttons beneath the room. Previews pause playback and use a native dialog with an explicit close button and Escape support. The practice excerpts can be opened further to distinguish visible evidence from unknowns. Worksheet previews retain their original group identity when they move to another table. The seven prompts match the printable worksheet. Scenery and people are not clickable.
 
-The room, pixel characters, dialogue, and featured participant role are illustrative, not a confirmed floor plan or speaking assignment. The example shows 20 people including six organizers; the planned attendance remains 15–25. The three interest choices suggest a starting group, subject to balancing. The simulation uses the proposed two 90-minute sessions and a provisional 30-minute break. Worksheets, rather than people, move during the transfer exercise.
+The room, pixel characters, dialogue, and featured participant role are illustrative, not a confirmed floor plan or speaking assignment. The example shows 20 people including six of the nine organizers; the planned attendance remains 15–25. The three interest choices suggest a starting group, subject to balancing. The simulation uses the proposed two 90-minute sessions and a provisional 30-minute break. Worksheets, rather than people, move during the transfer exercise.
 
 
 ## Update

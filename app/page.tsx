@@ -14,47 +14,48 @@ const stages = [
   {
     id: 'post', n: '01', title: 'The post', verb: 'Believing',
     question: 'Before I believe it, what can I check?',
-    record: 'A news-like video, its description, and the source cues visible to a viewer.',
-    task: 'Compare the claim with the sources a viewer can actually inspect. Separate a signal of authority from evidence of verification.',
+    record: 'A news-like video, its description, and the credibility, source, and provenance cues visible to a first viewer.',
+    task: 'Record what a viewer could see, what the interface let them inspect or verify, and what stayed out of reach at the moment of judgment. A visible signal of authority is not evidence of verification.',
     example: 'A post says “according to a source” but provides no link. What could a viewer check before sharing?',
-    output: 'A question about how a particular cue or action affects a user decision.',
+    output: 'A question about how a particular cue or action affects a user decision, and the evidence needed to answer it.',
   },
   {
     id: 'spread', n: '02', title: 'The spread', verb: 'Sharing',
     question: 'When I share it, what travels with it?',
-    record: 'An excerpt, a repost, comments, and the context that each preserves or omits.',
-    task: 'Follow what changes when the claim moves. Identify what another viewer can inspect, and how the person named can respond.',
+    record: 'A clip, a repost, commentary, comments, and the context that each preserves, adds, or loses.',
+    task: 'Follow what changes as the claim recirculates. Separate changes to the content from changes in how it is distributed, note what the next viewer can inspect, and ask how the person named can respond.',
     example: 'A clipped version circulates without the original description. What context could the sharing interface preserve?',
     output: 'A question about context, interpretation, or response during circulation.',
   },
   {
     id: 'aftermath', n: '03', title: 'The aftermath', verb: 'Reconsidering',
     question: 'Would I ever see the correction?',
-    record: 'Later reporting, responses, corrections, or a court outcome.',
-    task: 'Distinguish the existence of later information from evidence that earlier viewers encountered or understood it.',
+    record: 'Later reporting, responses, corrections, or a court outcome, and any update, linked post, or notification that could resurface it.',
+    task: 'Distinguish the existence of corrective information from evidence that earlier viewers saw it again and recognized its connection to the original claim. A court outcome does not establish what the audience learned.',
     example: 'A ruling is reported months later. What route could bring that update to someone who saw the original claim?',
     output: 'A question about the delivery, understanding, or use of later information.',
   },
 ];
 
 const sessions = [
-  { n: '01', title: 'Build a shared picture', rows: [
-    ['10', 'Opening scene', 'Read a labeled composite post and name what you would check.'],
-    ['25', 'Panel conversation', 'Journalism, platforms, and policy. Speakers to be confirmed.'],
-    ['45', 'Lightning contributions', 'Up to fifteen three-minute talks: one situation and one question.'],
-    ['10', 'Find your group', 'Choose post, spread, or aftermath; mix experiences across groups.'],
+  { n: '01', title: 'A shared sequence and your context', rows: [
+    ['10', 'Opening scene', 'Look at a labeled composite post. Note its cues, what the interface lets you inspect, and what actions it offers before you believe or share. The documented sequence is then introduced.'],
+    ['25', 'Panel conversation', 'A journalist, a platform or provenance practitioner, and a policy or government voice each bring a case and one consequential user encounter. The last five minutes take questions from cards. Speakers to be confirmed.'],
+    ['45', 'Lightning contributions', 'Up to fifteen three-minute talks. Each places one situation and one question on the sequence, using a shared slide file and timer.'],
+    ['10', 'Find your group', 'Choose post, spread, or aftermath. Organizers balance the groups by experience and context.'],
   ] },
-  { n: '02', title: 'Turn observations into questions', rows: [
-    ['35', 'Work with a case', 'Link records, cues, actions, and questions in pairs or trios.'],
-    ['15', 'Assemble the sequence', 'Compare documented, unknown, and disputed observations.'],
-    ['20', 'Try the idea elsewhere', 'Exchange worksheets; test an idea in another stage or context.'],
-    ['20', 'Choose what comes next', 'Rank questions, retain dissent, and find volunteer owners and next steps.'],
+  { n: '02', title: 'User decisions, system conditions, and transfer', rows: [
+    ['35', 'Work with a case', 'In pairs or trios, complete the common worksheet: the record, the cues and actions that were available, evidence of exposure, interaction, and effects, the practice or rule that applied, unknowns, and one research question with its evidence requirement.'],
+    ['15', 'Assemble the sequence', 'Each group reports for two minutes. The worksheets form one sequence with documented, unknown, and disputed items visible.'],
+    ['20', 'Try the idea elsewhere', 'Exchange worksheets. Take an intervention, such as a source link, label, provenance cue, community note, or disclosure rule, into another stage or case. Work through its target interaction, intended effect, required conditions, failure modes, and evidence of success. Return one hypothesis and one open question.'],
+    ['20', 'Choose what comes next', 'Four five-minute steps: a silent research proposal from each person, clustering by stage and target interaction, ranking with dissent and evidence gaps visible, and a volunteer owner and next step for the three highest-ranked questions.'],
   ] },
 ];
 
 const roles = [
-  'Workshop lead & synthesis', 'Outreach & the spread', 'Japanese cases & the aftermath',
-  'Verification & correction', 'Design & the transfer exercise', 'AI & the case worksheet',
+  'News platforms & data', 'Public communication & policy', 'Diplomacy & Japanese cases',
+  'Humanitarian technology', 'Product & responsible AI', 'AI & language technology',
+  'Law & governance', 'Policy & AI governance', 'Media forensics',
 ];
 
 function Arrow({ external = false }: { external?: boolean }) {
@@ -97,9 +98,9 @@ export default function Home() {
       </div>
 
       <section className="section wrap chapter" id="workshop" aria-labelledby="workshop-title">
-        <div className="section-heading"><div><p className="eyebrow">01 / INSIDE THE WORKSHOP</p><h2 id="workshop-title">When a post<br/>becomes the news.</h2></div><p className="section-intro">Work with people from journalism, HCI, AI, and policy. Start with a shared case, examine a decision, then test your ideas against someone else’s perspective.</p></div>
+        <div className="section-heading"><div><p className="eyebrow">01 / INSIDE THE WORKSHOP</p><h2 id="workshop-title">When a post<br/>becomes the news.</h2></div><p className="section-intro">Work with people from journalism, HCI, AI, and policy. Follow a documented accusation-video case through three stages, examine the decisions people made at each one, then test your idea in someone else’s stage.</p></div>
 
-        <div className="activity-heading"><h3>Three stages of a claim</h3><p>Select a stage to explore your group’s activity.</p></div>
+        <div className="activity-heading"><h3>Three stages of a claim</h3><p>Verification at the first encounter, recirculation, and correction re-exposure. Select a stage to see your group’s activity.</p></div>
         <Tabs.Root ref={stageRoot} value={activeStage} onValueChange={value => { if (typeof value === 'string') { setActiveStage(value); revealStage(); } }} className="stage-tabs">
           <Tabs.List activateOnFocus className="stage-list" aria-label="Explore the workshop stages">
             {stages.map(s => <Tabs.Tab className="stage-tab" value={s.id} key={s.id} onClick={() => { if (activeStage === s.id) revealStage(); }}><span className="stage-number">{s.n}</span><span><strong>{s.title.replace('The ', '')}</strong><small>{s.verb}</small></span><ArrowRight size={18} aria-hidden="true" /></Tabs.Tab>)}
@@ -129,21 +130,21 @@ export default function Home() {
         </article>)}</div>
         <details className="outcomes">
           <summary><span><span className="outcomes-label">What we take forward</span><span className="outcomes-preview">A shared sequence, research questions, and reusable materials.</span></span><ChevronDown size={18} aria-hidden="true" /></summary>
-          <div className="outcomes-details"><div><h4>A shared sequence</h4><p>Records, actions, unknowns, and disagreements across stages.</p></div><div><h4>Questions with next steps</h4><p>Research questions, volunteer owners, and ideas to pursue together.</p></div><div><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
+          <div className="outcomes-details"><div><h4>A shared sequence</h4><p>Available cues and actions, any evidence of exposure, interaction, and effects, and the unknowns and disagreements across stages.</p></div><div><h4>Questions with next steps</h4><p>Research questions that each name a user interaction, a system condition, a context, and the evidence needed, with a volunteer owner and a next step.</p></div><div><h4>A reusable foundation</h4><p>A participant-reviewed report within six weeks, the case pack, and an autumn 2027 online follow-up.</p></div></div>
         </details>
-        <p className="schedule-note">Provisional program · Conference break between sessions · Final timing follows acceptance.</p>
+        <p className="schedule-note">Provisional program · Two 90-minute sessions with a 30-minute conference break · If sessions are 75 minutes, every activity is kept but shortened · Final timing follows acceptance.</p>
       </section>
 
       <section className="participation-section chapter" id="participate" aria-labelledby="participate-title"><div className="wrap participation-layout">
-        <div className="participation-intro"><p className="eyebrow">04 / PARTICIPATION</p><h2 id="participate-title">Bring your<br/>perspective.</h2><p>We welcome HCI and AI researchers, system designers, journalists, creators, and platform and policy practitioners.</p><p>You do not need expertise in every field or prior knowledge of the Korean cases. Bring a case, interface, study, design, or argument that others can work with.</p><div className="participation-status"><span className="status-dot" aria-hidden="true"/><strong>Submissions are not open yet.</strong><p>The call and final instructions will follow workshop acceptance.</p></div></div>
-        <div className="participation-options"><p className="label">TWO WAYS TO CONTRIBUTE</p><article><span className="option-index">A</span><div><h3>Position paper</h3><p className="format">2–4 pages · ACM single-column · Not anonymized</p><p>A case, design, study, or argument, with a concrete situation and a question for the room.</p></div></article><article><span className="option-index">B</span><div><h3>Practitioner statement</h3><p className="format">1 page</p><p>A situation from practice, the decision it raised, and a question you want to explore with others.</p></div></article><div className="planned-dates"><div><span>Planned call opening</span><strong>17 Dec 2026</strong></div><div><span>Planned submission deadline</span><strong>11 Feb 2027 <small>AoE</small></strong></div></div><p className="selection-note">Dates are subject to acceptance. Two organizers will review each contribution for relevance, a concrete situation, and a workable question. Email submission instructions will be published with the call.</p></div>
+        <div className="participation-intro"><p className="eyebrow">04 / PARTICIPATION</p><h2 id="participate-title">Bring your<br/>perspective.</h2><p>We welcome HCI and AI researchers, system designers, journalists, creators, and platform and policy practitioners.</p><p>You do not need expertise in every field or prior knowledge of the Korean cases. Bring a case, an interface, a study, or a design question that others can work with. Name a user encounter, the interface feature that mattered, and what your material can and cannot establish. Practitioners need not use HCI terminology or a technical method.</p><p>Materials will be accessible PDFs with text descriptions of interface examples. We will request live captioning. You may contribute without attribution, and authors keep copyright of anything posted with their consent.</p><div className="participation-status"><span className="status-dot" aria-hidden="true"/><strong>Submissions are not open yet.</strong><p>The call and final instructions will follow workshop acceptance.</p></div></div>
+        <div className="participation-options"><p className="label">TWO WAYS TO CONTRIBUTE</p><article><span className="option-index">A</span><div><h3>Position paper</h3><p className="format">2–4 pages · ACM single-column · Not anonymized</p><p>A case, interface, study, or design question: one concrete situation, one question others can work on, and a note on what the material establishes and what remains unknown.</p></div></article><article><span className="option-index">B</span><div><h3>Practitioner statement</h3><p className="format">1 page</p><p>One situation from practice and one question. No HCI terminology or technical method is required.</p></div></article><div className="planned-dates"><div><span>Planned call opening</span><strong>17 Dec 2026</strong></div><div><span>Planned submission deadline</span><strong>11 Feb 2027 <small>AoE</small></strong></div></div><p className="selection-note">Dates are subject to acceptance. Submissions are by email; the address and instructions will be published with the call. Two organizers review each contribution for relevance, a concrete interaction context, and a workable question. Acceptances go out at least seven days before early registration, and every accepted contribution enters the shared sequence. Up to fifteen receive lightning talks. We expect 15 to 25 attendees, and at least two organizers will attend in person.</p></div>
       </div></section>
 
-      <section className="section wrap prepare chapter" id="prepare" aria-labelledby="prepare-title"><div className="section-heading"><div><p className="eyebrow">05 / PREPARATION</p><h2 id="prepare-title">Before you arrive</h2></div><p className="section-intro">Shared materials make it easier to spend the workshop working together.</p></div><ol className="prepare-steps"><li><p className="label">TWO WEEKS BEFORE</p><h3>Read the case pack</h3><p>We plan to share the reference sequence, comparison records, checked English translations of Korean material, and the common worksheet.</p></li><li><p className="label">FIND YOUR STARTING POINT</p><h3>Locate your question</h3><p>Choose a stage. Note what your record shows, what it cannot tell us, and what another perspective could help you understand.</p></li><li><p className="label">COME READY TO SHARE</p><h3>Prepare your contribution</h3><p>Selected contributors give a three-minute talk using a shared slide file. Others introduce their work in groups. Question cards keep discussion open.</p></li></ol>
+      <section className="section wrap prepare chapter" id="prepare" aria-labelledby="prepare-title"><div className="section-heading"><div><p className="eyebrow">05 / PREPARATION</p><h2 id="prepare-title">Before you arrive</h2></div><p className="section-intro">Shared materials make it easier to spend the workshop working together.</p></div><ol className="prepare-steps"><li><p className="label">TWO WEEKS BEFORE</p><h3>Read the case pack</h3><p>Posted two weeks ahead, it gives each case’s platform, genre, jurisdiction, endpoint, sources, and dates, with checked English translations of Korean records. It keeps the documented event sequence separate from evidence of what users were shown, and marks missing interface or audience evidence as unknown. The person accused is not named.</p></li><li><p className="label">FIND YOUR STARTING POINT</p><h3>Locate your question</h3><p>Choose a stage. Note what your record shows, what it cannot establish about exposure or effects, and what another perspective could help you understand.</p></li><li><p className="label">COME READY TO SHARE</p><h3>Prepare your contribution</h3><p>Selected contributors give a three-minute talk using a shared slide file. Others introduce their work in groups. Question cards keep discussion open.</p></li></ol>
         <div className="worksheet-callout"><div><div><h3>From a record to a research question</h3><p>Preview the seven prompts we’ll work through together.</p></div></div><a className="button button-outline" href={`${base}worksheet.html`} target="_blank" rel="noreferrer">Open the worksheet <Arrow external /></a></div>
       </section>
 
-      <section className="section wrap organizers chapter" id="organizers" aria-labelledby="organizers-title"><div className="section-heading"><div><p className="eyebrow">06 / ORGANIZERS</p><h2 id="organizers-title">Organizing team</h2></div><p className="section-intro">Our organizing team brings together news systems, public communication, policy, AI, and product development.</p></div><div className="people-grid">{organizers.map((o, i) => <article className="person" key={o.name}><span className="person-number">0{i + 1}</span><div><p className="person-role">{roles[i]}</p><h3>{o.name}</h3><p className="affiliation">{o.affiliation}</p><details><summary>About & contribution <ChevronDown size={15} aria-hidden="true" /></summary><p>{o.bio[0].toUpperCase() + o.bio.slice(1)}</p></details></div></article>)}</div></section>
+      <section className="section wrap organizers chapter" id="organizers" aria-labelledby="organizers-title"><div className="section-heading"><div><p className="eyebrow">06 / ORGANIZERS</p><h2 id="organizers-title">Organizing team</h2></div><p className="section-intro">Nine organizers from Columbia, Cornell, the University of Pennsylvania, and the University of Tokyo bring backgrounds in diplomacy, law, international development, media forensics, AI, news products, and public communication.</p></div><div className="people-grid">{organizers.map((o, i) => <article className="person" key={o.name}><span className="person-number">0{i + 1}</span><div><p className="person-role">{roles[i]}</p><h3>{o.name}</h3><p className="affiliation">{o.affiliation}</p><details><summary>About <ChevronDown size={15} aria-hidden="true" /></summary><p>{o.name.split(' ').pop()} {o.bio}</p></details></div></article>)}</div></section>
 
     </main>
     <footer id="contact" className="chapter"><div className="wrap"><div className="footer-top"><div><p className="eyebrow">News Without Newsrooms</p><h2 className="footer-subtitle"><span><span className="footer-keyword">Belief</span>, <span className="footer-keyword">Spread</span>,</span>{' '}<span>and <span className="footer-keyword">Aftermath</span></span>{' '}<span>as Questions for</span>{' '}<span><span className="footer-keyword keyword-journalism">JOURNALISM</span> and <span className="footer-keyword keyword-hci">HCI</span></span></h2></div><div className="contact-block"><p>Write to the organizing team.</p><a className="contact-email" href={`mailto:${site.contactEmail}`}><span>{site.contactEmail}</span><Arrow external /></a><p className="contact-note">This address is for questions. Submissions will open only after acceptance and publication of the call.</p></div></div><div className="footer-bottom"><a className="footer-brand" href="#main">News Without Newsrooms</a><p>Participant guide prototype · Proposed for CHI 2027</p><a href="https://chi2027.acm.org/authors/workshops/" target="_blank" rel="noreferrer">CHI workshop information <Arrow external /></a></div></div></footer>

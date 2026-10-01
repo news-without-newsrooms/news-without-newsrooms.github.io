@@ -43,7 +43,7 @@ export function participantBrief(phase: PhaseId, interest: number): ParticipantB
       const source = (interest + 2) % interests.length;
       return {
         action: `Receive ${interests[source].table.toLowerCase()} worksheet. Try an idea from it at ${chosen.table.toLowerCase()} stage. What must change?`,
-        takeaway: 'A possible intervention, its conditions, and failure points.',
+        takeaway: 'An intervention, its target, conditions, failure modes, and evidence.',
         material: `worksheet-${source}` as RoomObjectId, materialLabel: 'Incoming worksheet',
       };
     }

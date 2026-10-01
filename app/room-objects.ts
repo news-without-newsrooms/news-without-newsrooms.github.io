@@ -33,11 +33,11 @@ export function projectRoomObject(object: RoomObject, camera: RoomCamera) {
 export const worksheetPrompts = [
   ['Stage and decision', 'Post / spread / aftermath. Who is deciding what?'],
   ['Record and observation', 'Identify the source. What does it actually show?'],
-  ['What users could see, verify, and do', 'Identify visible cues, information, and available actions. Separate availability from actual use.'],
-  ['Applicable practice or rule', 'What editorial practice, platform condition, or policy applies in this context?'],
+  ['Available cues and actions', 'What could a user see, verify, and do in the interface? List the visible cues, the information on offer, and the actions available.'],
+  ['Evidence of exposure, interaction, and effects', 'What shows that users actually saw, used, or were changed by any of it? If nothing does, write unknown.'],
+  ['Applicable practice or rule', 'What editorial practice, platform condition, or policy applied in this context?'],
   ['Unknowns and disagreement', 'What cannot be established from this record? Where does the group disagree?'],
-  ['One research question', 'Connect a user decision to an interface or system condition.'],
-  ['Evidence and context', 'What would answer this question, and in which setting?'],
+  ['One research question and its evidence', 'Connect a user decision to an interface or system condition. What would answer the question, and in which setting?'],
 ] as const;
 
 /** Fictional examples already used in the participant guide, not findings from real cases. */
