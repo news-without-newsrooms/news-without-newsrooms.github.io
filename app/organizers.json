@@ -6,12 +6,27 @@
   },
   {
     "name": "Sze Wing (Hesper) Lui",
-    "bio": "is an MPA candidate in Technology Policy and Innovation at Columbia University, with a minor in Cybersecurity. She previously worked at MSCI, supporting ESG and climate-related communications, and conducted research at the Chinese Academy of Sciences on technology-enabled interventions and the cultural factors that may influence neurodivergence in young people. Her current research examines legitimacy laundering.",
+    "bio": "is an MPA candidate in Technology Policy and Innovation with a minor in Cybersecurity at Columbia University and an Institute of Global Politics Student Scholar. She previously worked at Hong Kong's Legislative Council and in ESG and climate communications at MSCI. Her current research examines legitimacy laundering and human rights risks in cyberspace.",
     "affiliation": "Columbia University"
   },
   {
     "name": "Sara Shibata",
-    "bio": "is an MIA candidate in International Security and Diplomacy at Columbia University, with a minor in Technology Policy, and is Communications Director of the Digital and Cyber Program run by SIPA Cyber. She has worked at Japan's Ministry of Foreign Affairs. She holds a Master of Public Policy from the University of Tokyo, where she researched social media civic participation among Japanese youth.",
+    "bio": "studies International Security and Diplomacy, with a minor in Technology Policy, at Columbia University, where she is Communications Director of SIPA Cyber's Digital and Cyber Program. She has worked at Japan's Ministry of Foreign Affairs and holds a Master of Public Policy from the University of Tokyo, where she researched Japanese youth's civic participation on social media.",
+    "affiliation": "Columbia University"
+  },
+  {
+    "name": "Zifu (Tyler) Qin",
+    "bio": "is pursuing a Ph.D. in Systems Engineering at Cornell University, working on multimedia forensics, computer vision, signal processing, and trustworthy AI. Qin's research develops computational and forensic methods for detecting and localizing manipulated visual content, including deepfakes, under real-world media transformations. Qin also participated in NSF I-Corps, exploring how to translate media authentication technologies into practice.",
+    "affiliation": "Cornell University"
+  },
+  {
+    "name": "Xuefei (Sophie) Ren",
+    "bio": "is an MPA candidate in Technology Policy and Innovation at Columbia University. She previously worked on global Smart TV advertising projects at Samsung Ads' PMO team, following management consulting experience at EY. As a McGill Integrated Management Student Fellow, she interviewed researchers at OpenAI and Mila. She has also advised a companion robotics company on product strategy and co-founded an initiative focused on responsible AI and data transparency.",
+    "affiliation": "Columbia University"
+  },
+  {
+    "name": "Crystal Yang",
+    "bio": "is an MIA candidate in Technology Policy and Innovation at Columbia University and is admitted as a solicitor in Australia. She holds a combined Bachelor degree in Law and Arts from the University of Sydney, held legal and compliance roles at the Australian Taxation Office, and led public programs advancing free knowledge on the internet at Wikimedia NYC.",
     "affiliation": "Columbia University"
   },
   {
@@ -20,28 +35,13 @@
     "affiliation": "Columbia University"
   },
   {
-    "name": "Xuefei (Sophie) Ren",
-    "bio": "is an MPA candidate in Technology Policy and Innovation at Columbia University. She previously worked on global Smart TV advertising projects at Samsung Ads' PMO team, following management consulting experience at EY. As a McGill Integrated Management Student Fellow, she interviewed researchers at OpenAI and Mila. She has also advised a companion robotics company on product strategy and co-founded an initiative focused on responsible AI and data transparency.",
-    "affiliation": "Columbia University"
-  },
-  {
     "name": "Puyu (Irene) Cui",
     "bio": "is a master's student in Computer and Information Science at the University of Pennsylvania, with a background in computer science, statistics, and finance. She works on AI and machine learning, including natural language processing, reinforcement learning, and AI agents.",
     "affiliation": "University of Pennsylvania"
   },
   {
-    "name": "Crystal Yang",
-    "bio": "is an MIA candidate in Technology Policy and Innovation at Columbia University and is admitted as a solicitor in Australia. She holds a combined Bachelor degree in Law and Arts from the University of Sydney, held legal and compliance roles at the Australian Taxation Office, and led public programs advancing free knowledge on the internet at Wikimedia NYC.",
-    "affiliation": "Columbia University"
-  },
-  {
     "name": "Fio Wibawa",
     "bio": "is a dual-degree candidate in the University of Tokyo's Master of Public Policy International Program and Columbia University's Master of International Affairs. At Tokyo, Wibawa follows the Public Management and International Relations stream on law, policy, and emerging technologies, and at Columbia concentrated in Technology Policy and Innovation with a focus on AI governance.",
     "affiliation": "The University of Tokyo · Columbia University"
-  },
-  {
-    "name": "Zifu (Tyler) Qin",
-    "bio": "is pursuing a Ph.D. in Systems Engineering at Cornell University, working on multimedia forensics, computer vision, signal processing, and trustworthy AI. Qin's research develops computational and forensic methods for detecting and localizing manipulated visual content, including deepfakes, under real-world media transformations. Qin also participated in NSF I-Corps, exploring how to translate media authentication technologies into practice.",
-    "affiliation": "Cornell University"
   }
 ]
